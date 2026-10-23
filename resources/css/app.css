@@ -1,0 +1,25 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../views/**/*.blade.php';
+
+@theme {
+    --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    --font-display: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+
+    /* 60% Dominan: Putih */
+    --color-brand-white: #ffffff;
+
+    /* 30% Sekunder: Coklat Agak Tua */
+    --color-dark-brown: #2d180c;
+    --color-dark-brown-soft: #442514;
+    --color-dark-text: #2d180c;
+    --color-dark-muted: #6d4630;
+    --color-dark-border: #ede7e2;
+
+    /* 10% Aksen & Tombol: Coklat Muda */
+    --color-light-brown: #b87d4b;
+    --color-light-brown-hover: #a36b3b;
+    --color-light-brown-soft: #f6efe8;
+}
