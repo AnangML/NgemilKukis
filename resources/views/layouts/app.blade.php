@@ -41,7 +41,7 @@
                 </a>
 
                 <!-- Clean Desktop Navigation Links (No Emojis) -->
-                <nav class="hidden md:flex items-center gap-8 text-sm font-semibold text-[#2d180c]">
+                <nav class="hidden md:flex items-center gap-7 text-sm font-semibold text-[#2d180c]">
                     <a href="{{ route('home') }}#katalog" class="hover:text-[#b87d4b] transition">
                         Katalog Kukis
                     </a>
@@ -54,10 +54,20 @@
                     <a href="{{ route('home') }}#panduan" class="hover:text-[#b87d4b] transition">
                         Tips Penyajian
                     </a>
+                    <a href="{{ route('customer.orders') }}" 
+                       class="hover:text-[#b87d4b] transition {{ request()->routeIs('customer.orders') ? 'text-[#b87d4b]' : '' }}">
+                        Pesanan Saya
+                    </a>
                 </nav>
 
-                <!-- Actions: Admin Access & Cart -->
-                <div class="flex items-center gap-4">
+                <!-- Actions: Admin Access, Mobile Orders & Cart -->
+                <div class="flex items-center gap-3 sm:gap-4">
+                    <a href="{{ route('customer.orders') }}" 
+                       class="inline-flex md:hidden text-xs font-bold text-[#6d4630] hover:text-[#b87d4b] transition py-1"
+                       title="Pesanan Saya">
+                        Pesanan
+                    </a>
+
                     @auth
                         @if(auth()->user()->isAdmin())
                             <a href="{{ route('admin.dashboard') }}" 
@@ -292,6 +302,7 @@
                     <h4 class="font-bold text-white text-sm mb-4">Navigasi</h4>
                     <ul class="space-y-2 text-xs text-stone-300">
                         <li><a href="{{ route('home') }}#katalog" class="hover:text-[#b87d4b] transition">Katalog Varian Kukis</a></li>
+                        <li><a href="{{ route('customer.orders') }}" class="hover:text-[#b87d4b] text-amber-300 font-bold transition">Lacak & Riwayat Pesanan Saya</a></li>
                         <li><a href="{{ route('home') }}#preorder" class="hover:text-[#b87d4b] transition">Jadwal Pre-Order (PO)</a></li>
                         <li><a href="{{ route('home') }}#kartu-ucapan" class="hover:text-[#b87d4b] transition">Custom Kartu Ucapan</a></li>
                         <li><a href="{{ route('checkout') }}" class="hover:text-[#b87d4b] transition">Checkout Pesanan</a></li>

@@ -101,6 +101,18 @@
 
                 if (response.ok && data.success) {
                     $store.cart.clearCart();
+
+                    // Save to device order history for customer tracking menu
+                    try {
+                        const myOrders = JSON.parse(localStorage.getItem('ngemilkukis_my_orders') || '[]');
+                        if (data.order_number && !myOrders.includes(data.order_number)) {
+                            myOrders.unshift(data.order_number);
+                            localStorage.setItem('ngemilkukis_my_orders', JSON.stringify(myOrders.slice(0, 25)));
+                        }
+                    } catch (e) {
+                        console.error('Error saving local order history', e);
+                    }
+
                     // Direct reliable redirect to Xendit invoice URL
                     window.location.href = data.redirect_url;
                 } else {

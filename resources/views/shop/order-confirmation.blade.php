@@ -17,6 +17,17 @@
             if (win && win.focus) win.focus();
         },
         init() {
+            // Automatically remember this order on the client device
+            try {
+                const myOrders = JSON.parse(localStorage.getItem('ngemilkukis_my_orders') || '[]');
+                if (this.orderNumber && !myOrders.includes(this.orderNumber)) {
+                    myOrders.unshift(this.orderNumber);
+                    localStorage.setItem('ngemilkukis_my_orders', JSON.stringify(myOrders.slice(0, 25)));
+                }
+            } catch (e) {
+                console.error('Error saving local order history', e);
+            }
+
             if (this.isPending) {
                 const interval = setInterval(async () => {
                     try {

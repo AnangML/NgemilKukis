@@ -20,6 +20,7 @@ class DatabaseSeeder extends Seeder
             ProductSeeder::class,
             GreetingCardTemplateSeeder::class,
             SiteSettingSeeder::class,
+            OrderSeeder::class,
         ]);
 
         // Seed default Admin user

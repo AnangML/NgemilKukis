@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\SiteSettingController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\CustomerOrderController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\Testing\SimulatePaymentController;
 use App\Http\Controllers\Webhooks\XenditWebhookController;
@@ -13,6 +14,9 @@ use Illuminate\Support\Facades\Route;
 
 // Katalog & Halaman Utama
 Route::get('/', [CatalogController::class, 'index'])->name('home');
+
+// Customer Order Tracking & History Domain
+Route::get('/pesanan', [CustomerOrderController::class, 'index'])->name('customer.orders');
 
 // Checkout Domain
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
