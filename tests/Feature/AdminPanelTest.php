@@ -6,8 +6,12 @@ use App\Models\GreetingCardTemplate;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Models\SiteSetting;
 use App\Models\User;
+use App\Services\OrderService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class AdminPanelTest extends TestCase
@@ -226,5 +230,166 @@ class AdminPanelTest extends TestCase
         $homeResponse->assertSee('Sensasi Renyah Mentega Belgia,');
         $homeResponse->assertSee('Meleleh Sempurna di Lidah!');
         $homeResponse->assertSee('+62 888-9999-0000');
+    }
+
+    public function test_admin_can_upload_product_image_file(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->admin()->create();
+
+        $file = UploadedFile::fake()->image('pistachio-cookie.jpg');
+
+        $response = $this->actingAs($admin)->post(route('admin.products.store'), [
+            'name' => 'Pistachio Kunafa Crunch',
+            'tagline' => 'Dubai Chocolate trend',
+            'description' => 'Crispy kataifi pastry infused with pure pistachio butter.',
+            'price' => 38000,
+            'type' => 'ready_stock',
+            'stock' => 20,
+            'image_file' => $file,
+            'is_active' => 1,
+        ]);
+
+        $response->assertRedirect(route('admin.products.index'));
+
+        $product = Product::where('name', 'Pistachio Kunafa Crunch')->first();
+        $this->assertNotNull($product);
+        $this->assertStringStartsWith('/storage/products/', $product->image);
+        Storage::disk('public')->assertExists(str_replace('/storage/', '', $product->image));
+    }
+
+    public function test_admin_can_toggle_product_status_and_featured(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $product = Product::factory()->create([
+            'is_active' => true,
+            'is_featured' => false,
+        ]);
+
+        // Toggle Active
+        $response1 = $this->actingAs($admin)->patch(route('admin.products.toggle', $product));
+        $response1->assertRedirect();
+        $this->assertFalse($product->fresh()->is_active);
+
+        // Toggle Featured
+        $response2 = $this->actingAs($admin)->patch(route('admin.products.toggle-featured', $product));
+        $response2->assertRedirect();
+        $this->assertTrue($product->fresh()->is_featured);
+    }
+
+    public function test_admin_can_upload_hero_banner_image(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->admin()->create();
+
+        $file = UploadedFile::fake()->image('artisan-hero.jpg');
+
+        $response = $this->actingAs($admin)->put(route('admin.settings.update'), [
+            'settings' => [
+                'hero_headline' => 'Kukis Hangat Premium',
+            ],
+            'hero_image_file' => $file,
+        ]);
+
+        $response->assertRedirect(route('admin.settings.index'));
+
+        $this->assertDatabaseHas('site_settings', [
+            'key' => 'hero_headline',
+            'value' => 'Kukis Hangat Premium',
+        ]);
+
+        $heroSetting = SiteSetting::where('key', 'hero_image_url')->first();
+        $this->assertNotNull($heroSetting);
+        $this->assertStringStartsWith('/storage/hero/', $heroSetting->value);
+        Storage::disk('public')->assertExists(str_replace('/storage/', '', $heroSetting->value));
+    }
+
+    public function test_admin_can_manage_greeting_cards(): void
+    {
+        $admin = User::factory()->admin()->create();
+
+        // 1. Create Greeting Card
+        $createResponse = $this->actingAs($admin)->post(route('admin.greeting-cards.store'), [
+            'name' => 'Eid Mubarak Warm Wishes',
+            'theme_color' => 'emerald',
+            'design_style' => 'festive_holiday',
+            'default_message' => 'Selamat Hari Raya Idul Fitri, mohon maaf lahir dan batin.',
+            'price' => 0,
+            'is_active' => 1,
+        ]);
+
+        $createResponse->assertRedirect(route('admin.greeting-cards.index'));
+        $this->assertDatabaseHas('greeting_card_templates', [
+            'name' => 'Eid Mubarak Warm Wishes',
+            'slug' => 'eid-mubarak-warm-wishes',
+            'theme_color' => 'emerald',
+        ]);
+
+        $card = GreetingCardTemplate::where('slug', 'eid-mubarak-warm-wishes')->first();
+
+        // 2. Update Greeting Card
+        $updateResponse = $this->actingAs($admin)->put(route('admin.greeting-cards.update', $card), [
+            'name' => 'Eid Mubarak Gold Edition',
+            'theme_color' => 'amber',
+            'design_style' => 'elegant_gold',
+            'default_message' => 'Taqabbalallahu minna wa minkum.',
+            'price' => 5000,
+            'is_active' => 1,
+        ]);
+
+        $updateResponse->assertRedirect(route('admin.greeting-cards.index'));
+        $this->assertDatabaseHas('greeting_card_templates', [
+            'id' => $card->id,
+            'name' => 'Eid Mubarak Gold Edition',
+            'price' => 5000,
+            'theme_color' => 'amber',
+        ]);
+
+        // 3. Toggle Status
+        $toggleResponse = $this->actingAs($admin)->patch(route('admin.greeting-cards.toggle', $card));
+        $toggleResponse->assertRedirect();
+        $this->assertFalse($card->fresh()->is_active);
+
+        // 4. Delete Greeting Card
+        $deleteResponse = $this->actingAs($admin)->delete(route('admin.greeting-cards.destroy', $card));
+        $deleteResponse->assertRedirect(route('admin.greeting-cards.index'));
+        $this->assertDatabaseMissing('greeting_card_templates', ['id' => $card->id]);
+    }
+
+    public function test_dynamic_shipping_rates_reflected_in_order_calculation(): void
+    {
+        $admin = User::factory()->admin()->create();
+        $product = Product::factory()->create([
+            'price' => 30000,
+            'sale_price' => null,
+            'stock' => 10,
+        ]);
+
+        // 1. Admin updates instant shipping rate to 35.000 via settings
+        $this->actingAs($admin)->put(route('admin.settings.update'), [
+            'settings' => [
+                'shipping_instant_grab' => '35000',
+            ],
+        ]);
+
+        // 2. OrderService calculates total using dynamic rate
+        /** @var OrderService $orderService */
+        $orderService = app(OrderService::class);
+        $order = $orderService->createOrder([
+            'customer_name' => 'Budi Santoso',
+            'customer_phone' => '08123456789',
+            'customer_email' => 'budi@example.com',
+            'customer_address' => 'Jl. Sudirman No 1',
+            'customer_city' => 'Jakarta Selatan',
+            'shipping_method' => 'instant_grab',
+            'payment_method' => 'xendit_qris',
+            'items' => [
+                ['id' => $product->id, 'quantity' => 2],
+            ],
+        ]);
+
+        // Total should be: subtotal (30.000 * 2 = 60.000) + dynamic shipping (35.000) = 95.000
+        $this->assertEquals(35000, $order->shipping_cost);
+        $this->assertEquals(95000, $order->total_amount);
     }
 }

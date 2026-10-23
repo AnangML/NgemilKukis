@@ -67,6 +67,14 @@
                     <span>Katalog Produk</span>
                 </a>
 
+                <a href="{{ route('admin.greeting-cards.index') }}" 
+                   class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition {{ request()->routeIs('admin.greeting-cards.*') ? 'bg-[#b87d4b] text-white font-bold shadow-sm' : 'text-[#6d4630] hover:bg-[#f6efe8] hover:text-[#2d180c]' }}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                    <span>Kartu Ucapan</span>
+                </a>
+
                 <a href="{{ route('admin.orders.index') }}" 
                    class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition {{ request()->routeIs('admin.orders.*') ? 'bg-[#b87d4b] text-white font-bold shadow-sm' : 'text-[#6d4630] hover:bg-[#f6efe8] hover:text-[#2d180c]' }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

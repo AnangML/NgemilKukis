@@ -86,15 +86,15 @@
                     <div class="flex flex-wrap justify-center lg:justify-start gap-3 pt-1 text-xs font-semibold text-[#2d180c]">
                         <div class="flex items-center gap-2 bg-[#f6efe8] px-3.5 py-1.5 rounded-full border border-[#ede7e2]">
                             <span class="w-1.5 h-1.5 rounded-full bg-[#b87d4b]"></span>
-                            <span>4.95 Rating Kepuasan</span>
+                            <span>{{ $siteSettings['hero_trust_badge_1'] ?? '4.95 Rating Kepuasan' }}</span>
                         </div>
                         <div class="flex items-center gap-2 bg-[#f6efe8] px-3.5 py-1.5 rounded-full border border-[#ede7e2]">
                             <span class="w-1.5 h-1.5 rounded-full bg-[#b87d4b]"></span>
-                            <span>Sameday & Paxel Pendingin</span>
+                            <span>{{ $siteSettings['hero_trust_badge_2'] ?? 'Sameday & Paxel Pendingin' }}</span>
                         </div>
                         <div class="flex items-center gap-2 bg-[#f6efe8] px-3.5 py-1.5 rounded-full border border-[#ede7e2]">
                             <span class="w-1.5 h-1.5 rounded-full bg-[#b87d4b]"></span>
-                            <span>Gratis Greeting Card</span>
+                            <span>{{ $siteSettings['hero_trust_badge_3'] ?? 'Gratis Greeting Card' }}</span>
                         </div>
                     </div>
 
@@ -548,8 +548,8 @@
     <section id="panduan" class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
         <div class="bg-[#fbfbfb] p-8 sm:p-12 rounded-3xl border border-[#ede7e2] space-y-6">
             <div class="text-center space-y-2">
-                <span class="text-xs font-bold uppercase tracking-wider text-[#b87d4b]">Tips Baker NgemilKukis</span>
-                <h3 class="font-bold text-2xl text-[#2d180c]">Cara Terbaik Menikmati Kukis Lumer</h3>
+                <span class="text-xs font-bold uppercase tracking-wider text-[#b87d4b]">{{ $siteSettings['guide_badge'] ?? 'Tips Baker NgemilKukis' }}</span>
+                <h3 class="font-bold text-2xl text-[#2d180c]">{{ $siteSettings['guide_headline'] ?? 'Cara Terbaik Menikmati Kukis Lumer' }}</h3>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 text-center">
@@ -559,9 +559,9 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                         </svg>
                     </div>
-                    <h4 class="font-bold text-sm text-[#2d180c]">Microwave (15 - 20 Detik)</h4>
+                    <h4 class="font-bold text-sm text-[#2d180c]">{{ $siteSettings['guide_microwave_title'] ?? 'Microwave (15 - 20 Detik)' }}</h4>
                     <p class="text-xs text-[#6d4630] leading-relaxed">
-                        Cokelat dan isian lava di tengahnya akan kembali meleleh hangat dan lembut seketika.
+                        {{ $siteSettings['guide_microwave_desc'] ?? 'Cokelat dan isian lava di tengahnya akan kembali meleleh hangat dan lembut seketika.' }}
                     </p>
                 </div>
 
@@ -572,9 +572,9 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.879 16.121A3 3 0 1012.015 11L11 14H9c0 .768.293 1.536.879 2.121z"/>
                         </svg>
                     </div>
-                    <h4 class="font-bold text-sm text-[#2d180c]">Oven / Airfryer (3 Menit)</h4>
+                    <h4 class="font-bold text-sm text-[#2d180c]">{{ $siteSettings['guide_oven_title'] ?? 'Oven / Airfryer (3 Menit)' }}</h4>
                     <p class="text-xs text-[#6d4630] leading-relaxed">
-                        Suhu 160°C untuk mendapatkan kembali kerenyahan pinggiran kukis yang renyah bermentega.
+                        {{ $siteSettings['guide_oven_desc'] ?? 'Suhu 160°C untuk mendapatkan kembali kerenyahan pinggiran kukis yang renyah bermentega.' }}
                     </p>
                 </div>
 
@@ -584,9 +584,9 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                         </svg>
                     </div>
-                    <h4 class="font-bold text-sm text-[#2d180c]">Daya Simpan</h4>
+                    <h4 class="font-bold text-sm text-[#2d180c]">{{ $siteSettings['guide_storage_title'] ?? 'Daya Simpan' }}</h4>
                     <p class="text-xs text-[#6d4630] leading-relaxed">
-                        Tahan hingga 7 hari di suhu ruang dalam toples/wadah kedap udara, atau 14 hari di kulkas.
+                        {{ $siteSettings['guide_storage_desc'] ?? 'Tahan hingga 7 hari di suhu ruang dalam toples/wadah kedap udara, atau 14 hari di kulkas.' }}
                     </p>
                 </div>
             </div>

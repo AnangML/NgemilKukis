@@ -30,6 +30,25 @@ class SiteSettingSeeder extends Seeder
             ['key' => 'hero_subheadline', 'value' => 'Lumer Manis di Dalam!', 'group' => 'hero'],
             ['key' => 'hero_description', 'value' => 'Dibuat tangan dengan mentega Prancis autentik dan lelehan cokelat Belgia murni. Nikmati sensasi kukis hangat untuk teman ngopi, atau kirim sebagai Hampers Kado dengan Custom Kartu Ucapan personal.', 'group' => 'hero'],
             ['key' => 'hero_image_url', 'value' => 'https://images.unsplash.com/photo-1499636136210-6f4ee915583e?auto=format&fit=crop&w=1000&q=80', 'group' => 'hero'],
+            ['key' => 'hero_trust_badge_1', 'value' => '4.95 Rating Kepuasan', 'group' => 'hero'],
+            ['key' => 'hero_trust_badge_2', 'value' => 'Sameday & Paxel Pendingin', 'group' => 'hero'],
+            ['key' => 'hero_trust_badge_3', 'value' => 'Gratis Greeting Card', 'group' => 'hero'],
+
+            // Shipping Rates
+            ['key' => 'shipping_instant_grab', 'value' => '25000', 'group' => 'shipping'],
+            ['key' => 'shipping_sameday_gojek', 'value' => '18000', 'group' => 'shipping'],
+            ['key' => 'shipping_paxel_food', 'value' => '22000', 'group' => 'shipping'],
+            ['key' => 'shipping_regular_jne', 'value' => '12000', 'group' => 'shipping'],
+
+            // Heating & Storage Guide (#panduan)
+            ['key' => 'guide_badge', 'value' => 'Tips Baker NgemilKukis', 'group' => 'guide'],
+            ['key' => 'guide_headline', 'value' => 'Cara Terbaik Menikmati Kukis Lumer', 'group' => 'guide'],
+            ['key' => 'guide_microwave_title', 'value' => 'Microwave (15 - 20 Detik)', 'group' => 'guide'],
+            ['key' => 'guide_microwave_desc', 'value' => 'Cokelat dan isian lava di tengahnya akan kembali meleleh hangat dan lembut seketika.', 'group' => 'guide'],
+            ['key' => 'guide_oven_title', 'value' => 'Oven / Airfryer (3 Menit)', 'group' => 'guide'],
+            ['key' => 'guide_oven_desc', 'value' => 'Suhu 160°C untuk mendapatkan kembali kerenyahan pinggiran kukis yang renyah bermentega.', 'group' => 'guide'],
+            ['key' => 'guide_storage_title', 'value' => 'Daya Simpan', 'group' => 'guide'],
+            ['key' => 'guide_storage_desc', 'value' => 'Tahan hingga 7 hari di suhu ruang dalam toples/wadah kedap udara, atau 14 hari di kulkas.', 'group' => 'guide'],
 
             // Social & Contact
             ['key' => 'whatsapp_number', 'value' => '6281234567890', 'group' => 'contact'],

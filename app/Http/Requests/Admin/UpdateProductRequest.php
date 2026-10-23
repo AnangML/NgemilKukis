@@ -31,6 +31,7 @@ class UpdateProductRequest extends FormRequest
             'baking_schedule' => ['nullable', 'string', 'max:255'],
             'stock' => ['required', 'integer', 'min:0'],
             'image' => ['nullable', 'string', 'max:500'],
+            'image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'badge' => ['nullable', 'string', 'max:50'],
             'ingredients' => ['nullable', 'string', 'max:255'],
             'weight_grams' => ['nullable', 'integer', 'min:0'],

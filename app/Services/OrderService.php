@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Order;
 use App\Models\Product;
+use App\Models\SiteSetting;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\Cache;
@@ -12,6 +13,20 @@ use Illuminate\Support\Str;
 
 class OrderService
 {
+    /**
+     * Resolve the effective shipping rate from dynamic SiteSetting or fallback default.
+     */
+    public function getShippingRate(string $method): int
+    {
+        $dynamicRate = SiteSetting::get('shipping_'.$method);
+
+        if ($dynamicRate !== null && is_numeric($dynamicRate)) {
+            return (int) $dynamicRate;
+        }
+
+        return self::SHIPPING_RATES[$method] ?? 15000;
+    }
+
     /**
      * Shipping rates lookup table in IDR.
      *
@@ -78,7 +93,7 @@ class OrderService
      */
     protected function executeOrderCreation(array $data, ?string $idempotencyKey): Order
     {
-        $shippingCost = self::SHIPPING_RATES[$data['shipping_method'] ?? ''] ?? 15000;
+        $shippingCost = $this->getShippingRate($data['shipping_method'] ?? '');
 
         return DB::transaction(function () use ($data, $shippingCost, $idempotencyKey) {
             $subtotal = 0;

@@ -64,6 +64,12 @@ class ProductController extends Controller
         $data['is_active'] = $request->boolean('is_active', true);
         $data['is_featured'] = $request->boolean('is_featured', false);
 
+        // Handle uploaded image file if present
+        if ($request->hasFile('image_file')) {
+            $path = $request->file('image_file')->store('products', 'public');
+            $data['image'] = '/storage/'.$path;
+        }
+
         $product = Product::create($data);
 
         return redirect()->route('admin.products.index')
@@ -99,6 +105,12 @@ class ProductController extends Controller
         $data['is_active'] = $request->boolean('is_active');
         $data['is_featured'] = $request->boolean('is_featured');
 
+        // Handle uploaded image file if present
+        if ($request->hasFile('image_file')) {
+            $path = $request->file('image_file')->store('products', 'public');
+            $data['image'] = '/storage/'.$path;
+        }
+
         $product->update($data);
 
         return redirect()->route('admin.products.index')
@@ -115,5 +127,33 @@ class ProductController extends Controller
 
         return redirect()->route('admin.products.index')
             ->with('success', "Produk '{$name}' telah dihapus dari katalog.");
+    }
+
+    /**
+     * Toggle the active visibility status of a product.
+     */
+    public function toggleStatus(Product $product): RedirectResponse
+    {
+        $product->update([
+            'is_active' => ! $product->is_active,
+        ]);
+
+        $stateText = $product->is_active ? 'diaktifkan' : 'dinonaktifkan';
+
+        return back()->with('success', "Status produk '{$product->name}' berhasil {$stateText}.");
+    }
+
+    /**
+     * Toggle the featured highlight status of a product.
+     */
+    public function toggleFeatured(Product $product): RedirectResponse
+    {
+        $product->update([
+            'is_featured' => ! $product->is_featured,
+        ]);
+
+        $stateText = $product->is_featured ? 'dijadikan produk unggulan' : 'dihapus dari produk unggulan';
+
+        return back()->with('success', "Produk '{$product->name}' berhasil {$stateText}.");
     }
 }

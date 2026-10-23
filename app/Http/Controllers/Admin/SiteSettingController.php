@@ -27,6 +27,11 @@ class SiteSettingController extends Controller
     {
         $inputs = $request->validated('settings');
 
+        if ($request->hasFile('hero_image_file')) {
+            $path = $request->file('hero_image_file')->store('hero', 'public');
+            $inputs['hero_image_url'] = '/storage/'.$path;
+        }
+
         foreach ($inputs as $key => $value) {
             SiteSetting::set($key, $value);
         }

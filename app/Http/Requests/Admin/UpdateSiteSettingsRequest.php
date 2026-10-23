@@ -24,6 +24,7 @@ class UpdateSiteSettingsRequest extends FormRequest
         return [
             'settings' => ['required', 'array'],
             'settings.*' => ['nullable', 'string'],
+            'hero_image_file' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
         ];
     }
 }

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\GreetingCardController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\SiteSettingController;
 use App\Http\Controllers\CatalogController;
@@ -41,7 +42,13 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
         // Products Catalog Management
+        Route::patch('products/{product}/toggle', [ProductController::class, 'toggleStatus'])->name('products.toggle');
+        Route::patch('products/{product}/toggle-featured', [ProductController::class, 'toggleFeatured'])->name('products.toggle-featured');
         Route::resource('products', ProductController::class)->except(['show']);
+
+        // Greeting Cards Management
+        Route::patch('greeting-cards/{greetingCard}/toggle', [GreetingCardController::class, 'toggleStatus'])->name('greeting-cards.toggle');
+        Route::resource('greeting-cards', GreetingCardController::class)->except(['show'])->parameters(['greeting-cards' => 'greetingCard']);
 
         // Orders Management
         Route::get('/orders', [App\Http\Controllers\Admin\OrderController::class, 'index'])->name('orders.index');

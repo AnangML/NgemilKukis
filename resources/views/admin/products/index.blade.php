@@ -132,16 +132,19 @@
                                     </span>
                                 </td>
 
-                                <!-- Status -->
+                                <!-- Status (Toggleable) -->
                                 <td class="py-4 px-6">
-                                    @if($product->is_active)
-                                        <span class="inline-block bg-emerald-100 text-emerald-800 text-[11px] font-bold px-2 py-0.5 rounded">
-                                            Aktif
-                                        </span>
-                                    @else
-                                        <span class="inline-block bg-stone-100 text-stone-600 text-[11px] font-bold px-2 py-0.5 rounded">
-                                            Nonaktif
-                                        </span>
+                                    <form method="POST" action="{{ route('admin.products.toggle', $product) }}" class="inline">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" 
+                                                title="Klik untuk ubah status aktif"
+                                                class="cursor-pointer transition transform active:scale-95 inline-block text-[11px] font-bold px-2.5 py-1 rounded-full {{ $product->is_active ? 'bg-emerald-100 text-emerald-800 hover:bg-emerald-200' : 'bg-stone-100 text-stone-600 hover:bg-stone-200' }}">
+                                            {{ $product->is_active ? 'Aktif' : 'Nonaktif' }}
+                                        </button>
+                                    </form>
+                                    @if($product->is_featured)
+                                        <span class="block mt-1 text-[10px] font-bold text-[#b87d4b]">Unggulan</span>
                                     @endif
                                 </td>
 

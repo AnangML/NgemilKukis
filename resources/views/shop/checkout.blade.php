@@ -12,10 +12,10 @@
         city: 'Jakarta',
         shippingMethod: 'instant_grab',
         shippingCosts: {
-            'instant_grab': 25000,
-            'sameday_gojek': 18000,
-            'paxel_food': 22000,
-            'regular_jne': 12000
+            'instant_grab': {{ (int) ($siteSettings['shipping_instant_grab'] ?? 25000) }},
+            'sameday_gojek': {{ (int) ($siteSettings['shipping_sameday_gojek'] ?? 18000) }},
+            'paxel_food': {{ (int) ($siteSettings['shipping_paxel_food'] ?? 22000) }},
+            'regular_jne': {{ (int) ($siteSettings['shipping_regular_jne'] ?? 12000) }}
         },
         idempotencyKey: (window.crypto && typeof crypto.randomUUID === 'function') 
             ? crypto.randomUUID() 
@@ -224,11 +224,11 @@
                         <div class="flex items-center gap-3">
                             <input type="radio" value="instant_grab" x-model="shippingMethod" class="text-[#b87d4b] focus:ring-[#b87d4b]">
                             <div>
-                                <span class="font-bold text-sm text-[#2d180c] block">🛵 Grab / Gojek Instant</span>
+                                <span class="font-bold text-sm text-[#2d180c] block">Grab / Gojek Instant</span>
                                 <span class="text-xs text-[#6d4630]">Kukis hangat sampai dalam 1-2 jam (Area Lokal)</span>
                             </div>
                         </div>
-                        <span class="font-bold text-sm text-[#2d180c]">Rp 25.000</span>
+                        <span class="font-bold text-sm text-[#2d180c]">Rp <span x-text="Number(shippingCosts['instant_grab']).toLocaleString('id-ID')"></span></span>
                     </label>
 
                     <!-- Option 2: Sameday -->
@@ -237,11 +237,11 @@
                         <div class="flex items-center gap-3">
                             <input type="radio" value="sameday_gojek" x-model="shippingMethod" class="text-[#b87d4b] focus:ring-[#b87d4b]">
                             <div>
-                                <span class="font-bold text-sm text-[#2d180c] block">⚡ Sameday Delivery</span>
+                                <span class="font-bold text-sm text-[#2d180c] block">Sameday Delivery</span>
                                 <span class="text-xs text-[#6d4630]">Sampai di hari yang sama (Sebelum pukul 18.00 WIB)</span>
                             </div>
                         </div>
-                        <span class="font-bold text-sm text-[#2d180c]">Rp 18.000</span>
+                        <span class="font-bold text-sm text-[#2d180c]">Rp <span x-text="Number(shippingCosts['sameday_gojek']).toLocaleString('id-ID')"></span></span>
                     </label>
 
                     <!-- Option 3: Paxel Food -->
@@ -250,11 +250,11 @@
                         <div class="flex items-center gap-3">
                             <input type="radio" value="paxel_food" x-model="shippingMethod" class="text-[#b87d4b] focus:ring-[#b87d4b]">
                             <div>
-                                <span class="font-bold text-sm text-[#2d180c] block">❄️ Paxel Food (Pendingin Khusus Makanan)</span>
+                                <span class="font-bold text-sm text-[#2d180c] block">Paxel Food (Pendingin Khusus Makanan)</span>
                                 <span class="text-xs text-[#6d4630]">Pengiriman antarkota dengan cold storage & jaminan aman</span>
                             </div>
                         </div>
-                        <span class="font-bold text-sm text-[#2d180c]">Rp 22.000</span>
+                        <span class="font-bold text-sm text-[#2d180c]">Rp <span x-text="Number(shippingCosts['paxel_food']).toLocaleString('id-ID')"></span></span>
                     </label>
 
                     <!-- Option 4: Regular -->
@@ -263,11 +263,11 @@
                         <div class="flex items-center gap-3">
                             <input type="radio" value="regular_jne" x-model="shippingMethod" class="text-[#b87d4b] focus:ring-[#b87d4b]">
                             <div>
-                                <span class="font-bold text-sm text-[#2d180c] block">📦 JNE / SiCepat Reguler (1-2 Hari)</span>
+                                <span class="font-bold text-sm text-[#2d180c] block">JNE / SiCepat Reguler (1-2 Hari)</span>
                                 <span class="text-xs text-[#6d4630]">Dipacking dengan bubble wrap tebal & seal kedap udara</span>
                             </div>
                         </div>
-                        <span class="font-bold text-sm text-[#2d180c]">Rp 12.000</span>
+                        <span class="font-bold text-sm text-[#2d180c]">Rp <span x-text="Number(shippingCosts['regular_jne']).toLocaleString('id-ID')"></span></span>
                     </label>
                 </div>
             </div>
