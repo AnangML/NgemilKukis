@@ -44,14 +44,25 @@
             }
 
             if ($store.cart.items.length === 0) {
-                alert('Keranjang belanja kamu masih kosong!');
-                window.location.href = '{{ route('home') }}';
+                this.errorMessage = 'Keranjang belanja kamu masih kosong!';
                 return;
             }
 
-            if (!this.name || !this.phone || !this.address) {
-                this.errorMessage = 'Mohon lengkapi Nama, Nomor WhatsApp, dan Alamat Pengiriman.';
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+            if (!this.name || !this.name.trim() || !this.phone || !this.phone.trim() || !this.address || !this.address.trim()) {
+                this.errorMessage = 'Mohon lengkapi Nama Penerima, Nomor WhatsApp, dan Alamat Pengiriman.';
+                if (!this.name || !this.name.trim()) {
+                    const el = document.getElementById('input_customer_name');
+                    el?.focus();
+                    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } else if (!this.phone || !this.phone.trim()) {
+                    const el = document.getElementById('input_customer_phone');
+                    el?.focus();
+                    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } else if (!this.address || !this.address.trim()) {
+                    const el = document.getElementById('input_customer_address');
+                    el?.focus();
+                    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
                 return;
             }
 
@@ -90,9 +101,17 @@
 
                 if (response.ok && data.success) {
                     $store.cart.clearCart();
+                    // Direct reliable redirect to Xendit invoice URL
                     window.location.href = data.redirect_url;
                 } else {
-                    this.errorMessage = data.message || 'Terjadi kesalahan saat memproses pesanan. Silakan periksa kembali formulir.';
+                    let errMsg = data.message;
+                    if (data.errors && typeof data.errors === 'object') {
+                        const firstKey = Object.keys(data.errors)[0];
+                        if (firstKey && data.errors[firstKey].length > 0) {
+                            errMsg = data.errors[firstKey][0];
+                        }
+                    }
+                    this.errorMessage = errMsg || 'Terjadi kesalahan saat memproses pesanan. Silakan periksa kembali formulir.';
                     this.isLoading = false;
                 }
             } catch (err) {
@@ -143,20 +162,20 @@
                 <div class="space-y-4">
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-[#2d180c] mb-1.5">Nama Lengkap Penerima *</label>
-                        <input type="text" x-model="name" placeholder="Contoh: Anang Pratama" required
+                        <input type="text" id="input_customer_name" x-model="name" placeholder="Contoh: Anang Pratama" required
                                class="w-full px-4 py-3 rounded-xl border border-[#ede7e2] focus:border-[#b87d4b] focus:ring-2 focus:ring-[#b87d4b]/20 text-sm">
                     </div>
 
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <div>
                             <label class="block text-xs font-bold uppercase tracking-wider text-[#2d180c] mb-1.5">Nomor WhatsApp Aktif *</label>
-                            <input type="tel" x-model="phone" placeholder="081234567890" required
+                            <input type="tel" id="input_customer_phone" x-model="phone" placeholder="081234567890" required
                                    class="w-full px-4 py-3 rounded-xl border border-[#ede7e2] focus:border-[#b87d4b] focus:ring-2 focus:ring-[#b87d4b]/20 text-sm">
                             <span class="text-[11px] text-[#6d4630] mt-1 block">Untuk konfirmasi & link tracking kurir</span>
                         </div>
                         <div>
                             <label class="block text-xs font-bold uppercase tracking-wider text-[#2d180c] mb-1.5">Email (Opsional)</label>
-                            <input type="email" x-model="email" placeholder="nama@email.com"
+                            <input type="email" id="input_customer_email" x-model="email" placeholder="nama@email.com"
                                    class="w-full px-4 py-3 rounded-xl border border-[#ede7e2] focus:border-[#b87d4b] focus:ring-2 focus:ring-[#b87d4b]/20 text-sm">
                             <span class="text-[11px] text-[#6d4630] mt-1 block">Salinan invoice dikirim ke sini</span>
                         </div>
@@ -164,7 +183,7 @@
 
                     <div>
                         <label class="block text-xs font-bold uppercase tracking-wider text-[#2d180c] mb-1.5">Alamat Pengiriman Lengkap *</label>
-                        <textarea x-model="address" rows="3" placeholder="Nama jalan, nomor rumah, RT/RW, kelurahan, kecamatan, patokan..." required
+                        <textarea id="input_customer_address" x-model="address" rows="3" placeholder="Nama jalan, nomor rumah, RT/RW, kelurahan, kecamatan, patokan..." required
                                   class="w-full px-4 py-3 rounded-xl border border-[#ede7e2] focus:border-[#b87d4b] focus:ring-2 focus:ring-[#b87d4b]/20 text-sm leading-relaxed"></textarea>
                     </div>
 
@@ -324,7 +343,22 @@
                         </div>
                     </label>
 
-                    <!-- Option 3: WhatsApp Direct -->
+                    <!-- Option 3: International Credit/Debit Card (Visa / Mastercard - Cocok untuk Pembeli Luar Negeri / Thailand) -->
+                    <label class="flex items-center justify-between p-4 rounded-2xl border cursor-pointer transition"
+                           :class="paymentMethod === 'xendit_card' ? 'border-[#b87d4b] bg-[#f6efe8] ring-2 ring-[#b87d4b]' : 'border-[#ede7e2] hover:bg-stone-50'">
+                        <div class="flex items-center gap-3">
+                            <input type="radio" value="xendit_card" x-model="paymentMethod" class="text-[#b87d4b] focus:ring-[#b87d4b]">
+                            <div>
+                                <span class="font-bold text-sm text-[#2d180c] flex items-center gap-2">
+                                    <span>💳 Kartu Kredit / Debit Internasional</span>
+                                    <span class="bg-[#b87d4b] text-white text-[10px] font-bold px-2 py-0.5 rounded-full">Visa &bull; Mastercard</span>
+                                </span>
+                                <span class="text-xs text-[#6d4630] mt-0.5 block">Mendukung kartu luar negeri (Thailand, Singapura, dll) dengan verifikasi aman 3D Secure</span>
+                            </div>
+                        </div>
+                    </label>
+
+                    <!-- Option 4: WhatsApp Direct -->
                     <label class="flex items-center justify-between p-4 rounded-2xl border cursor-pointer transition"
                            :class="paymentMethod === 'whatsapp_direct' ? 'border-[#b87d4b] bg-[#f6efe8] ring-2 ring-[#b87d4b]' : 'border-[#ede7e2] hover:bg-stone-50'">
                         <div class="flex items-center gap-3">
@@ -405,10 +439,17 @@
                     </div>
                 </div>
 
+                <!-- Inline Error Alert right above button -->
+                <div x-cloak x-show="errorMessage" class="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-xs font-semibold flex items-center gap-2.5">
+                    <span class="text-base shrink-0">⚠️</span>
+                    <span x-text="errorMessage"></span>
+                </div>
+
                 <!-- Submit Button (Tombol Coklat Muda 10%) -->
                 <button @click="submitOrder()" 
                         :disabled="isLoading"
                         type="button"
+                        id="btn-pay-order"
                         class="w-full bg-[#b87d4b] hover:bg-[#a36b3b] text-white font-bold py-4 px-6 rounded-full shadow-sm transition transform active:scale-98 flex items-center justify-center gap-2 disabled:opacity-75 disabled:cursor-not-allowed cursor-pointer">
                     <span x-show="!isLoading">Bayar Pesanan Sekarang &rarr;</span>
                     <span x-show="isLoading" class="flex items-center gap-2">

@@ -39,9 +39,10 @@ class XenditPaymentService
             })->all();
 
             $paymentMethods = match ($order->payment_method) {
-                'xendit_qris' => ['QRIS'],
+                'xendit_card' => ['CREDIT_CARD'],
+                'xendit_qris' => ['QRIS', 'CREDIT_CARD'],
                 'xendit_va' => ['BCA', 'BNI', 'BRI', 'MANDIRI', 'PERMATA'],
-                default => ['QRIS', 'BCA', 'BNI', 'BRI', 'MANDIRI', 'OVO', 'DANA', 'SHOPEEPAY'],
+                default => ['CREDIT_CARD', 'QRIS', 'BCA', 'BNI', 'BRI', 'MANDIRI', 'OVO', 'DANA', 'SHOPEEPAY'],
             };
 
             $response = Http::withBasicAuth($secretKey, '')

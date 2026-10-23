@@ -29,7 +29,7 @@ class StoreOrderRequest extends FormRequest
             'customer_address' => ['required', 'string', 'max:500'],
             'customer_city' => ['nullable', 'string', 'max:100'],
             'shipping_method' => ['required', 'string', 'in:instant_grab,sameday_gojek,paxel_food,regular_jne'],
-            'payment_method' => ['required', 'string', 'in:xendit_qris,xendit_va,whatsapp_direct'],
+            'payment_method' => ['required', 'string', 'in:xendit_qris,xendit_va,xendit_card,whatsapp_direct'],
             'items' => ['required', 'array', 'min:1'],
             'items.*.id' => ['required', 'exists:products,id'],
             'items.*.quantity' => ['required', 'integer', 'min:1', 'max:50'],

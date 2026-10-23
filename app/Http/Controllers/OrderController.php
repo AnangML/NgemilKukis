@@ -48,4 +48,22 @@ class OrderController extends Controller
             'order' => $order,
         ]);
     }
+
+    /**
+     * Get real-time payment and order status for polling.
+     */
+    public function status(string $orderNumber): JsonResponse
+    {
+        $order = Order::query()
+            ->where('order_number', $orderNumber)
+            ->firstOrFail();
+
+        return response()->json([
+            'order_number' => $order->order_number,
+            'status' => $order->status,
+            'is_paid' => $order->status === 'paid',
+            'status_label' => $order->statusLabel(),
+            'invoice_url' => $order->xendit_invoice_url,
+        ]);
+    }
 }

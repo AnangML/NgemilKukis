@@ -134,4 +134,23 @@ class ShopFeatureTest extends TestCase
             'status' => 'paid',
         ]);
     }
+
+    public function test_order_status_endpoint_returns_json_for_polling(): void
+    {
+        $order = Order::factory()->create([
+            'order_number' => 'NK-STATUS-001',
+            'status' => 'pending',
+            'xendit_invoice_url' => 'https://checkout-staging.xendit.co/web/test1234',
+        ]);
+
+        $response = $this->getJson(route('orders.status', 'NK-STATUS-001'));
+
+        $response->assertStatus(200);
+        $response->assertJson([
+            'order_number' => 'NK-STATUS-001',
+            'status' => 'pending',
+            'is_paid' => false,
+            'invoice_url' => 'https://checkout-staging.xendit.co/web/test1234',
+        ]);
+    }
 }

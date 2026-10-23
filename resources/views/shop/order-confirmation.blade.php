@@ -3,7 +3,38 @@
 @section('title', 'Detail Pesanan #' . $order->order_number . ' - NgemilKukis')
 
 @section('content')
-<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">
+<div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8"
+     x-data="{
+        isPending: {{ $order->status === 'pending' ? 'true' : 'false' }},
+        orderNumber: '{{ $order->order_number }}',
+        invoiceUrl: '{{ $order->xendit_invoice_url }}',
+        openXenditPopup(url) {
+            const width = 540;
+            const height = 780;
+            const left = Math.max(0, (window.screen.width - width) / 2);
+            const top = Math.max(0, (window.screen.height - height) / 2);
+            const win = window.open(url, 'XenditPaymentPopup', `width=${width},height=${height},top=${top},left=${left},scrollbars=yes,status=no,resizable=yes`);
+            if (win && win.focus) win.focus();
+        },
+        init() {
+            if (this.isPending) {
+                const interval = setInterval(async () => {
+                    try {
+                        const res = await fetch(`/order/${this.orderNumber}/status`);
+                        if (res.ok) {
+                            const data = await res.json();
+                            if (data.is_paid) {
+                                clearInterval(interval);
+                                window.location.reload();
+                            }
+                        }
+                    } catch (e) {
+                        console.error('Polling status error', e);
+                    }
+                }, 3000);
+            }
+        }
+     }">
     
     <!-- Flash Status Message if simulated -->
     @if (session('status'))
@@ -47,7 +78,7 @@
             @elseif ($order->status === 'pending')
                 <span class="inline-flex items-center gap-2 bg-[#f6efe8] text-[#b87d4b] font-bold text-xs px-4 py-1.5 rounded-full border border-[#ede7e2]">
                     <span class="w-2 h-2 rounded-full bg-[#b87d4b] animate-pulse"></span>
-                    <span>Menunggu Pembayaran</span>
+                    <span>Menunggu Pembayaran (Otomatis Diperbarui)</span>
                 </span>
             @else
                 <span class="inline-block bg-stone-100 text-stone-800 font-bold text-xs px-4 py-1.5 rounded-full">
@@ -72,6 +103,22 @@
                     {{ $order->formattedTotal() }}
                 </span>
             </div>
+
+            @if($order->xendit_invoice_url && str_contains($order->xendit_invoice_url, 'xendit.co'))
+                <!-- Xendit Pop-up Window Launcher Banner -->
+                <div class="p-4 bg-[#f6efe8] rounded-2xl border border-[#ede7e2] flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div class="space-y-0.5 text-center sm:text-left">
+                        <span class="font-bold text-sm text-[#2d180c] block">💳 Bayar dengan Xendit (Kartu Kredit / QRIS / VA)</span>
+                        <span class="text-xs text-[#6d4630]">Buka pop-up pembayaran resmi Xendit, halaman ini akan otomatis berganti ke status Lunas.</span>
+                    </div>
+                    <button @click="openXenditPopup(invoiceUrl)" 
+                            type="button"
+                            class="bg-[#b87d4b] hover:bg-[#a36b3b] text-white font-bold text-xs px-5 py-2.5 rounded-xl transition flex items-center gap-1.5 shadow-xs cursor-pointer whitespace-nowrap">
+                        <span>Buka Jendela Pembayaran</span>
+                        <span>↗</span>
+                    </button>
+                </div>
+            @endif
 
             @if ($order->payment_method === 'xendit_qris')
                 <!-- QRIS Display -->

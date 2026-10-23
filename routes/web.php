@@ -20,6 +20,7 @@ Route::post('/checkout', [OrderController::class, 'store'])->name('checkout.plac
 
 // Order Lifecycle Domain
 Route::get('/order/{orderNumber}', [OrderController::class, 'show'])->name('orders.show');
+Route::get('/order/{orderNumber}/status', [OrderController::class, 'status'])->name('orders.status');
 
 // Payment Webhook & Testing Simulation
 Route::post('/order/{orderNumber}/simulate-pay', SimulatePaymentController::class)->name('orders.simulate-pay');
