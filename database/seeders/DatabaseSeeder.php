@@ -32,5 +32,20 @@ class DatabaseSeeder extends Seeder
                 'role' => 'admin',
             ]
         );
+
+        // Seed default VIP Customer for demo & testing
+        User::updateOrCreate(
+            ['email' => 'customer@ngemilkukis.com'],
+            [
+                'name' => 'Budi Customer VIP',
+                'password' => Hash::make('password123'),
+                'phone' => '081298765432',
+                'role' => 'customer',
+                'auth_provider' => 'email',
+                'member_discount_amount' => 10000,
+                'saved_city' => 'Jakarta Selatan',
+                'saved_address' => 'Jl. Senopati No. 88, Kebayoran Baru',
+            ]
+        );
     }
 }

@@ -134,32 +134,43 @@
             @if ($order->payment_method === 'xendit_qris')
                 <!-- QRIS Display -->
                 <div class="flex flex-col sm:flex-row items-center gap-8 justify-center py-4">
-                    <div class="bg-white p-4 rounded-2xl border border-[#ede7e2] shadow-xs text-center space-y-2">
-                        <!-- Simulated QR Code SVG -->
-                        <div class="w-48 h-48 bg-[#2d180c] p-2 rounded-xl flex items-center justify-center text-white text-xs font-mono">
-                            <div class="bg-white w-full h-full p-2 flex flex-col justify-between items-center rounded-lg">
-                                <div class="w-full flex justify-between">
-                                    <div class="w-10 h-10 border-4 border-black flex items-center justify-center">
-                                        <div class="w-4 h-4 bg-black"></div>
-                                    </div>
-                                    <div class="w-10 h-10 border-4 border-black flex items-center justify-center">
-                                        <div class="w-4 h-4 bg-black"></div>
-                                    </div>
-                                </div>
-                                <div class="font-extrabold text-[10px] tracking-wider text-stone-800 uppercase">
-                                    QRIS NGEMILKUKIS
-                                </div>
-                                <div class="w-full flex justify-between">
-                                    <div class="w-10 h-10 border-4 border-black flex items-center justify-center">
-                                        <div class="w-4 h-4 bg-black"></div>
-                                    </div>
-                                    <div class="text-[9px] font-bold text-stone-600">
-                                        XENDIT
-                                    </div>
-                                </div>
+                    <div class="bg-white p-5 rounded-3xl border border-[#ede7e2] shadow-sm text-center space-y-3 shrink-0">
+                        <!-- QRIS Standard Card Frame -->
+                        <div class="w-56 p-4 bg-white rounded-2xl border-2 border-stone-800 flex flex-col items-center shadow-xs">
+                            <!-- QRIS Header -->
+                            <div class="w-full flex items-center justify-between pb-2 border-b border-stone-200 mb-2.5">
+                                <span class="font-extrabold text-sm text-[#2d180c] tracking-widest">QRIS</span>
+                                <span class="text-[10px] font-bold text-stone-500 uppercase tracking-wider">NgemilKukis</span>
+                            </div>
+
+                            <!-- Dense Dynamic QR Code Image -->
+                            <div class="p-1.5 bg-white border border-stone-100 rounded-xl">
+                                <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data={{ urlencode(route('orders.show', $order->order_number)) }}" 
+                                     alt="QRIS Pembayaran NgemilKukis {{ $order->order_number }}" 
+                                     class="w-40 h-40 object-contain rounded-lg">
+                            </div>
+
+                            <!-- Footer info -->
+                            <div class="w-full pt-2 border-t border-stone-200 mt-2 text-center">
+                                <span class="text-[9px] font-mono text-stone-500 block truncate">Ref: {{ $order->order_number }}</span>
+                                <span class="text-[9px] font-bold text-[#b87d4b] uppercase tracking-wider block mt-0.5">Xendit Payment Gateway</span>
                             </div>
                         </div>
-                        <span class="text-[11px] font-bold text-[#2d180c] block">Scan dengan Aplikasi Bank / E-Wallet</span>
+
+                        <div class="space-y-2">
+                            @if($order->xendit_invoice_url && str_contains($order->xendit_invoice_url, 'xendit.co'))
+                                <button @click="openXenditPopup(invoiceUrl)" 
+                                        type="button"
+                                        class="w-full bg-[#b87d4b] hover:bg-[#a36b3b] text-white font-bold text-xs py-2.5 px-4 rounded-xl shadow-xs transition flex items-center justify-center gap-1.5 cursor-pointer active:scale-95">
+                                    <span>Buka QRIS Resmi Xendit</span>
+                                    <span>↗</span>
+                                </button>
+                                <span class="text-[10px] text-[#6d4630] block">Tersambung langsung ke invoice Xendit</span>
+                            @else
+                                <span class="text-xs font-bold text-[#2d180c] block">Scan via BCA / GoPay / OVO / DANA</span>
+                                <span class="text-[10px] text-[#6d4630] block">(Mode Simulasi: gunakan tombol di bawah untuk bayar instan)</span>
+                            @endif
+                        </div>
                     </div>
 
                     <div class="space-y-3 max-w-sm text-sm text-[#2d180c]">
