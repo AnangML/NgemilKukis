@@ -19,6 +19,7 @@ class Order extends Model
     protected $fillable = [
         'order_number',
         'idempotency_key',
+        'user_id',
         'customer_name',
         'customer_phone',
         'customer_email',
@@ -27,6 +28,7 @@ class Order extends Model
         'shipping_method',
         'shipping_cost',
         'subtotal',
+        'discount_amount',
         'total_amount',
         'status',
         'payment_method',
@@ -48,9 +50,20 @@ class Order extends Model
         return [
             'shipping_cost' => 'integer',
             'subtotal' => 'integer',
+            'discount_amount' => 'integer',
             'total_amount' => 'integer',
             'is_gift' => 'boolean',
         ];
+    }
+
+    /**
+     * User customer relation.
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
     }
 
     /**

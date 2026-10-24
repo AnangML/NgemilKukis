@@ -74,13 +74,77 @@
                                class="text-xs font-bold text-[#b87d4b] hover:text-[#2d180c] transition">
                                 Panel Admin
                             </a>
+                        @else
+                            <!-- Customer Logged In Dropdown -->
+                            <div class="relative" x-data="{ userMenuOpen: false }" @click.away="userMenuOpen = false">
+                                <button @click="userMenuOpen = !userMenuOpen" 
+                                        type="button" 
+                                        class="flex items-center gap-2 p-1.5 rounded-full hover:bg-stone-50 border border-[#ede7e2] transition cursor-pointer">
+                                    @if(auth()->user()->avatar_url)
+                                        <img src="{{ auth()->user()->avatar_url }}" alt="{{ auth()->user()->name }}" class="w-7 h-7 rounded-full object-cover">
+                                    @else
+                                        <div class="w-7 h-7 rounded-full bg-[#f6efe8] text-[#b87d4b] font-extrabold text-xs flex items-center justify-center">
+                                            {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                                        </div>
+                                    @endif
+                                    <span class="text-xs font-bold text-[#2d180c] hidden sm:inline max-w-[100px] truncate">
+                                        {{ auth()->user()->name }}
+                                    </span>
+                                    <span class="text-[10px] font-extrabold bg-[#f6efe8] text-[#b87d4b] px-2 py-0.5 rounded-full hidden lg:inline">
+                                        VIP Member
+                                    </span>
+                                    <svg class="w-3.5 h-3.5 text-[#6d4630]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                    </svg>
+                                </button>
+
+                                <div x-show="userMenuOpen" 
+                                     x-cloak
+                                     x-transition:enter="transition ease-out duration-100"
+                                     x-transition:enter-start="transform opacity-0 scale-95"
+                                     x-transition:enter-end="transform opacity-100 scale-100"
+                                     x-transition:leave="transition ease-in duration-75"
+                                     x-transition:leave-start="transform opacity-100 scale-100"
+                                     x-transition:leave-end="transform opacity-0 scale-95"
+                                     class="absolute right-0 mt-2 w-48 rounded-2xl bg-white shadow-xl border border-[#ede7e2] py-2 z-50 text-xs">
+                                    <div class="px-4 py-2 border-b border-[#ede7e2] mb-1">
+                                        <p class="font-extrabold text-[#2d180c] truncate">{{ auth()->user()->name }}</p>
+                                        <p class="text-[10px] text-[#6d4630] truncate">{{ auth()->user()->email }}</p>
+                                        <span class="inline-block mt-1 text-[10px] font-bold text-[#b87d4b]">Diskon Rp 10.000 Aktif</span>
+                                    </div>
+
+                                    <a href="{{ route('customer.account') }}" 
+                                       class="block px-4 py-2 font-bold text-[#2d180c] hover:bg-[#f6efe8] hover:text-[#b87d4b] transition">
+                                        Profil & Alamat Saya
+                                    </a>
+
+                                    <a href="{{ route('customer.orders') }}" 
+                                       class="block px-4 py-2 font-bold text-[#2d180c] hover:bg-[#f6efe8] hover:text-[#b87d4b] transition">
+                                        Riwayat Pesanan
+                                    </a>
+
+                                    <div class="border-t border-[#ede7e2] mt-1 pt-1">
+                                        <form method="POST" action="{{ route('customer.logout') }}">
+                                            @csrf
+                                            <button type="submit" 
+                                                    class="w-full text-left px-4 py-2 font-bold text-rose-600 hover:bg-rose-50 transition cursor-pointer">
+                                                Keluar Akun
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
                         @endif
                     @else
-                        <a href="{{ route('admin.login') }}" 
-                           class="text-xs font-bold text-[#6d4630] hover:text-[#b87d4b] transition"
-                           title="Masuk ke Panel Admin">
-                            Masuk
-                        </a>
+                        <!-- Guest: Trigger Auth Modal Button -->
+                        <button type="button" 
+                                @click="$dispatch('open-auth-modal', { tab: 'email', mode: 'login' })"
+                                class="inline-flex items-center gap-1.5 text-xs font-bold text-[#2d180c] hover:text-[#b87d4b] px-3.5 py-2 rounded-full border border-[#ede7e2] hover:bg-stone-50 transition cursor-pointer">
+                            <svg class="w-3.5 h-3.5 text-[#b87d4b]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                            </svg>
+                            <span>Masuk / VIP</span>
+                        </button>
                     @endauth
 
                     <!-- Trigger Cart Button (Tombol Coklat Muda 10%) -->
@@ -352,6 +416,9 @@
             </div>
         </div>
     </footer>
+
+    <!-- Customer Auth Modal Component -->
+    <x-customer-auth-modal />
 
     @stack('scripts')
 </body>

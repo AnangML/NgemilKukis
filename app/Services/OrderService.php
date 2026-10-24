@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\SiteSetting;
+use App\Models\User;
 use Illuminate\Database\QueryException;
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\Cache;
@@ -116,12 +117,24 @@ class OrderService
                 ];
             }
 
-            $totalAmount = $subtotal + $shippingCost;
+            $userId = $data['user_id'] ?? auth()->id();
+            $discountAmount = 0;
+
+            if ($userId) {
+                $user = User::query()->find($userId);
+                if ($user && $user->isCustomer()) {
+                    $discountAmount = (int) ($user->member_discount_amount ?? 10000);
+                    $discountAmount = min($discountAmount, $subtotal);
+                }
+            }
+
+            $totalAmount = max(0, $subtotal + $shippingCost - $discountAmount);
             $orderNumber = 'NK-'.date('Ymd').'-'.strtoupper(Str::random(5));
 
             $order = Order::query()->create([
                 'order_number' => $orderNumber,
                 'idempotency_key' => $idempotencyKey,
+                'user_id' => $userId,
                 'customer_name' => $data['customer_name'],
                 'customer_phone' => $data['customer_phone'],
                 'customer_email' => $data['customer_email'] ?? null,
@@ -130,6 +143,7 @@ class OrderService
                 'shipping_method' => $data['shipping_method'],
                 'shipping_cost' => $shippingCost,
                 'subtotal' => $subtotal,
+                'discount_amount' => $discountAmount,
                 'total_amount' => $totalAmount,
                 'status' => 'pending',
                 'payment_method' => $data['payment_method'],

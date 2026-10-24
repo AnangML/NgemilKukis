@@ -16,8 +16,13 @@ class CheckoutController extends Controller
             ->active()
             ->get();
 
+        $user = auth()->user();
+        $savedAddresses = $user ? $user->addresses()->latest()->get() : collect();
+
         return view('shop.checkout', [
             'greetingCards' => $greetingCards,
+            'customer' => $user,
+            'savedAddresses' => $savedAddresses,
         ]);
     }
 }

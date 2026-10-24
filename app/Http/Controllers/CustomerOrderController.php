@@ -44,6 +44,18 @@ class CustomerOrderController extends Controller
         } elseif (! empty($orderNumbers)) {
             $hasFilter = true;
             $query->whereIn('order_number', $orderNumbers);
+        } elseif (auth()->check()) {
+            $user = auth()->user();
+            $hasFilter = true;
+            $query->where(function (Builder $q) use ($user) {
+                $q->where('user_id', $user->id);
+                if (! empty($user->phone)) {
+                    $q->orWhere('customer_phone', $user->phone);
+                }
+                if (! empty($user->email)) {
+                    $q->orWhere('customer_email', $user->email);
+                }
+            });
         }
 
         // Calculate status counts on the matched scope

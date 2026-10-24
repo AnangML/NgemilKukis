@@ -3,13 +3,26 @@
 @section('title', 'Checkout Pesanan - NgemilKukis')
 
 @section('content')
+@php
+    $user = auth()->user();
+    $initialName = $user?->name ?? '';
+    $initialPhone = $user?->phone ?? '';
+    $initialEmail = $user?->email ?? '';
+    $initialAddress = $user?->saved_address ?? ($savedAddresses->firstWhere('is_primary', true)?->full_address ?? ($savedAddresses->first()?->full_address ?? ''));
+    $initialCity = $user?->saved_city ?? ($savedAddresses->firstWhere('is_primary', true)?->city ?? ($savedAddresses->first()?->city ?? 'Jakarta'));
+    $primaryAddressId = $savedAddresses->firstWhere('is_primary', true)?->id ?? ($savedAddresses->first()?->id ?? null);
+    $memberDiscount = auth()->check() ? (int) ($user->member_discount_amount ?? 10000) : 0;
+@endphp
+
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12" 
      x-data="{
-        name: '',
-        phone: '',
-        email: '',
-        address: '',
-        city: 'Jakarta',
+        name: {{ json_encode($initialName) }},
+        phone: {{ json_encode($initialPhone) }},
+        email: {{ json_encode($initialEmail) }},
+        address: {{ json_encode($initialAddress) }},
+        city: {{ json_encode($initialCity) }},
+        selectedAddressId: {{ json_encode($primaryAddressId) }},
+        memberDiscount: {{ $memberDiscount }},
         shippingMethod: 'instant_grab',
         shippingCosts: {
             'instant_grab': {{ (int) ($siteSettings['shipping_instant_grab'] ?? 25000) }},
@@ -29,8 +42,20 @@
             return this.shippingCosts[this.shippingMethod] || 15000;
         },
 
+        get memberDiscountApplied() {
+            return Math.min(this.memberDiscount, $store.cart.subtotal);
+        },
+
         get grandTotal() {
-            return $store.cart.subtotal + this.shippingCost;
+            return Math.max(0, $store.cart.subtotal + this.shippingCost - this.memberDiscountApplied);
+        },
+
+        selectSavedAddress(addr) {
+            this.selectedAddressId = addr.id;
+            this.name = addr.recipient_name || this.name;
+            this.phone = addr.recipient_phone || this.phone;
+            this.address = addr.full_address || this.address;
+            this.city = addr.city || this.city;
         },
 
         formatRupiah(amount) {
@@ -135,11 +160,55 @@
      }">
 
     <!-- Breadcrumb -->
-    <div class="mb-8 flex items-center gap-2 text-xs font-semibold text-[#6d4630]">
+    <div class="mb-6 flex items-center gap-2 text-xs font-semibold text-[#6d4630]">
         <a href="{{ route('home') }}" class="hover:text-[#b87d4b]">Beranda</a>
         <span>&rsaquo;</span>
         <span class="text-[#2d180c]">Checkout & Pembayaran</span>
     </div>
+
+    @guest
+    <!-- Member Promo Hook Banner -->
+    <div class="mb-8 p-5 sm:p-6 bg-gradient-to-r from-[#fdfbf9] to-[#f6efe8] border border-[#ede7e2] rounded-3xl flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xs">
+        <div class="flex items-start sm:items-center gap-3.5">
+            <div class="w-10 h-10 rounded-2xl bg-[#b87d4b]/15 text-[#b87d4b] font-bold text-lg flex items-center justify-center shrink-0">
+                🎁
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h3 class="font-bold text-sm sm:text-base text-[#2d180c]">Hemat Rp 10.000 dengan Masuk VIP Club!</h3>
+                    <span class="bg-[#b87d4b] text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Spesial</span>
+                </div>
+                <p class="text-xs text-[#6d4630] mt-0.5">Masuk via Google, Email, atau No. Telepon dalam 10 detik. Diskon langsung terpotong otomatis di total pembayaran ini!</p>
+            </div>
+        </div>
+        <button type="button" 
+                @click="$dispatch('open-auth-modal', { mode: 'login' })" 
+                class="whitespace-nowrap bg-[#b87d4b] hover:bg-[#a36b3b] text-white text-xs font-bold px-6 py-3 rounded-full shadow-sm transition active:scale-95 cursor-pointer text-center">
+            Masuk & Klaim Diskon &rarr;
+        </button>
+    </div>
+    @endguest
+
+    @auth
+    <!-- Member Active Banner -->
+    <div class="mb-8 p-4 sm:p-5 bg-gradient-to-r from-emerald-50/70 to-white border border-emerald-200/60 rounded-3xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+        <div class="flex items-center gap-3">
+            <div class="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 font-bold text-base flex items-center justify-center shrink-0">
+                ⭐
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h3 class="font-bold text-sm sm:text-base text-[#2d180c]">Halo, {{ auth()->user()->name }}! (Kukis VIP Member)</h3>
+                    <span class="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">Hemat Rp 10.000</span>
+                </div>
+                <p class="text-xs text-[#6d4630] mt-0.5">Formulir telah diisi otomatis dari data profil & buku alamat tersimpan.</p>
+            </div>
+        </div>
+        <a href="{{ route('customer.account') }}" class="text-xs font-bold text-[#b87d4b] hover:underline self-end sm:self-center">
+            Kelola Buku Alamat &rarr;
+        </a>
+    </div>
+    @endauth
 
     <!-- Error Alert -->
     <div x-cloak x-show="errorMessage" class="mb-8 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-800 text-sm font-semibold flex items-center gap-3">
@@ -170,6 +239,38 @@
                     <span class="w-7 h-7 rounded-lg bg-[#b87d4b] text-white font-bold text-xs flex items-center justify-center">1</span>
                     <h3 class="font-bold text-base sm:text-lg text-[#2d180c]">Data Penerima & Kontak</h3>
                 </div>
+
+                @auth
+                @if($savedAddresses->isNotEmpty())
+                <div class="p-4 bg-[#fbf9f7] rounded-2xl border border-[#ede7e2] space-y-2.5">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold uppercase tracking-wider text-[#2d180c]">Buku Alamat Tersimpan:</span>
+                        <a href="{{ route('customer.account') }}#buku-alamat" class="text-[11px] font-bold text-[#b87d4b] hover:underline">+ Kelola Alamat</a>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        @foreach($savedAddresses as $addr)
+                        <button type="button"
+                                @click="selectSavedAddress({{ json_encode($addr) }})"
+                                class="text-left text-xs p-3 rounded-xl border transition cursor-pointer"
+                                :class="selectedAddressId === {{ $addr->id }} ? 'border-[#b87d4b] bg-white ring-2 ring-[#b87d4b]/30 shadow-xs' : 'border-[#ede7e2] bg-white hover:border-[#b87d4b]/50'">
+                            <div class="flex items-center justify-between gap-1">
+                                <span class="font-bold text-[#2d180c]">📍 {{ $addr->label }}</span>
+                                @if($addr->is_primary)
+                                    <span class="text-[9px] bg-[#f6efe8] text-[#b87d4b] px-1.5 py-0.5 rounded font-bold">Utama</span>
+                                @endif
+                            </div>
+                            <div class="text-[11px] text-[#6d4630] mt-1 truncate">
+                                {{ $addr->recipient_name }} ({{ $addr->recipient_phone }})
+                            </div>
+                            <div class="text-[11px] text-stone-500 truncate mt-0.5">
+                                {{ $addr->full_address }} &bull; {{ $addr->city }}
+                            </div>
+                        </button>
+                        @endforeach
+                    </div>
+                </div>
+                @endif
+                @endauth
 
                 <div class="space-y-4">
                     <div>
@@ -444,6 +545,16 @@
                         <span>Custom Greeting Card</span>
                         <span class="uppercase text-[10px] bg-[#f6efe8] text-[#b87d4b] px-2 py-0.5 rounded-full font-bold">Gratis</span>
                     </div>
+
+                    <template x-if="memberDiscount > 0">
+                        <div class="flex items-center justify-between text-emerald-700 text-xs font-semibold bg-emerald-50/80 p-2.5 rounded-xl border border-emerald-200/60">
+                            <span class="flex items-center gap-1.5">
+                                <span>⭐</span>
+                                <span>Diskon Kukis VIP Member</span>
+                            </span>
+                            <span class="font-bold" x-text="'-' + formatRupiah(memberDiscountApplied)"></span>
+                        </div>
+                    </template>
 
                     <div class="pt-3 border-t border-[#ede7e2] flex items-center justify-between">
                         <span class="font-bold text-sm text-[#2d180c]">Total Pembayaran</span>
