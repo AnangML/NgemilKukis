@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             GreetingCardTemplateSeeder::class,
             SiteSettingSeeder::class,
             OrderSeeder::class,
+            CouponSeeder::class,
         ]);
 
         // Seed default Admin user
@@ -58,7 +59,7 @@ class DatabaseSeeder extends Seeder
         );
 
         // Seed default VIP Customer for demo & testing
-        User::updateOrCreate(
+        $customer = User::updateOrCreate(
             ['email' => 'customer@ngemilkukis.com'],
             [
                 'name' => 'Budi Customer VIP',
@@ -67,9 +68,21 @@ class DatabaseSeeder extends Seeder
                 'role' => 'customer',
                 'auth_provider' => 'email',
                 'member_discount_amount' => 10000,
+                'points_balance' => 200,
                 'saved_city' => 'Jakarta Selatan',
                 'saved_address' => 'Jl. Senopati No. 88, Kebayoran Baru',
             ]
         );
+
+        // Seed initial welcome bonus point transaction if customer has no transactions
+        if ($customer->pointTransactions()->doesntExist()) {
+            $customer->pointTransactions()->create([
+                'type' => 'bonus',
+                'amount' => 200,
+                'balance_after' => 200,
+                'description' => 'Bonus Spesial Member Baru & Loyalitas VIP',
+                'created_at' => now(),
+            ]);
+        }
     }
 }

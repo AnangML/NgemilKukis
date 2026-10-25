@@ -314,12 +314,44 @@
                 <span>Ongkos Kirim ({{ ucfirst(str_replace('_', ' ', $order->shipping_method)) }})</span>
                 <span class="font-bold text-[#2d180c]">Rp {{ number_format($order->shipping_cost, 0, ',', '.') }}</span>
             </div>
+
+            @if($order->discount_amount > 0)
+                <div class="flex justify-between text-emerald-700 text-xs font-bold">
+                    <span>Diskon Member VIP</span>
+                    <span>-Rp {{ number_format($order->discount_amount, 0, ',', '.') }}</span>
+                </div>
+            @endif
+
+            @if($order->coupon_discount_amount > 0)
+                <div class="flex justify-between text-purple-700 text-xs font-bold">
+                    <span>Diskon Kupon Promo ({{ $order->coupon_code }})</span>
+                    <span>-Rp {{ number_format($order->coupon_discount_amount, 0, ',', '.') }}</span>
+                </div>
+            @endif
+
+            @if($order->points_discount_amount > 0)
+                <div class="flex justify-between text-amber-800 text-xs font-bold">
+                    <span>Tukar Cookie Crumbs ({{ number_format($order->points_redeemed) }} poin)</span>
+                    <span>-Rp {{ number_format($order->points_discount_amount, 0, ',', '.') }}</span>
+                </div>
+            @endif
+
             <div class="pt-3 border-t border-[#ede7e2] flex justify-between items-center text-base">
                 <span class="font-bold text-[#2d180c]">Total Pembayaran</span>
                 <span class="font-extrabold text-2xl text-[#b87d4b]">
                     {{ $order->formattedTotal() }}
                 </span>
             </div>
+
+            @if($order->points_earned > 0)
+                <div class="mt-2 p-3 rounded-2xl bg-[#faf7f4] border border-[#ede7e2] flex items-center justify-between text-xs text-[#6d4630]">
+                    <span class="flex items-center gap-1.5">
+                        <span>🍪</span>
+                        <span>Cookie Crumbs Diterima:</span>
+                    </span>
+                    <span class="font-bold text-emerald-700">+{{ number_format($order->points_earned) }} Crumbs</span>
+                </div>
+            @endif
         </div>
 
         <!-- Shipping & Recipient Details -->

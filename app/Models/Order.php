@@ -29,6 +29,12 @@ class Order extends Model
         'shipping_cost',
         'subtotal',
         'discount_amount',
+        'coupon_id',
+        'coupon_code',
+        'coupon_discount_amount',
+        'points_redeemed',
+        'points_discount_amount',
+        'points_earned',
         'total_amount',
         'status',
         'payment_method',
@@ -51,6 +57,10 @@ class Order extends Model
             'shipping_cost' => 'integer',
             'subtotal' => 'integer',
             'discount_amount' => 'integer',
+            'coupon_discount_amount' => 'integer',
+            'points_redeemed' => 'integer',
+            'points_discount_amount' => 'integer',
+            'points_earned' => 'integer',
             'total_amount' => 'integer',
             'is_gift' => 'boolean',
         ];
@@ -84,6 +94,44 @@ class Order extends Model
     public function greetingCardTemplate(): BelongsTo
     {
         return $this->belongsTo(GreetingCardTemplate::class, 'gift_card_template_id');
+    }
+
+    /**
+     * Applied coupon relation.
+     *
+     * @return BelongsTo<Coupon, $this>
+     */
+    public function coupon(): BelongsTo
+    {
+        return $this->belongsTo(Coupon::class);
+    }
+
+    /**
+     * Coupon usage record.
+     *
+     * @return HasMany<CouponUsage, $this>
+     */
+    public function couponUsages(): HasMany
+    {
+        return $this->hasMany(CouponUsage::class);
+    }
+
+    /**
+     * Loyalty point transactions related to this order.
+     *
+     * @return HasMany<PointTransaction, $this>
+     */
+    public function pointTransactions(): HasMany
+    {
+        return $this->hasMany(PointTransaction::class);
+    }
+
+    /**
+     * Total discount across member discount, coupon, and redeemed points.
+     */
+    public function getTotalDiscountAttribute(): int
+    {
+        return $this->discount_amount + $this->coupon_discount_amount + $this->points_discount_amount;
     }
 
     /**

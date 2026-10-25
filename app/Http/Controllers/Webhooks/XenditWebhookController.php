@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Webhooks;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Services\ActivityLogger;
+use App\Services\LoyaltyPointService;
 use App\Services\XenditPaymentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -44,6 +45,8 @@ class XenditWebhookController extends Controller
                 $order->update([
                     'status' => 'paid',
                 ]);
+
+                app(LoyaltyPointService::class)->earnPointsForOrder($order);
 
                 ActivityLogger::order(
                     'order.paid_webhook',

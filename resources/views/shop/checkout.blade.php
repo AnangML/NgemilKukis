@@ -12,6 +12,7 @@
     $initialCity = $user?->saved_city ?? ($savedAddresses->firstWhere('is_primary', true)?->city ?? ($savedAddresses->first()?->city ?? 'Jakarta'));
     $primaryAddressId = $savedAddresses->firstWhere('is_primary', true)?->id ?? ($savedAddresses->first()?->id ?? null);
     $memberDiscount = auth()->check() ? (int) ($user->member_discount_amount ?? 10000) : 0;
+    $userPoints = auth()->check() ? (int) ($user->points_balance ?? 0) : 0;
 @endphp
 
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12" 
@@ -23,6 +24,15 @@
         city: {{ json_encode($initialCity) }},
         selectedAddressId: {{ json_encode($primaryAddressId) }},
         memberDiscount: {{ $memberDiscount }},
+        userPointsBalance: {{ $userPoints }},
+        couponCodeInput: '',
+        appliedCoupon: null,
+        couponError: '',
+        isCheckingCoupon: false,
+        usePoints: false,
+        pointsToRedeem: 0,
+        pointValueInIdr: 50,
+        earnRatePerRupiah: 1000,
         shippingMethod: 'instant_grab',
         shippingCosts: {
             'instant_grab': {{ (int) ($siteSettings['shipping_instant_grab'] ?? 25000) }},
@@ -42,12 +52,105 @@
             return this.shippingCosts[this.shippingMethod] || 15000;
         },
 
+        get couponDiscountAmount() {
+            return this.appliedCoupon ? (this.appliedCoupon.discount_amount || 0) : 0;
+        },
+
+        get isStackable() {
+            return !this.appliedCoupon || Boolean(this.appliedCoupon.is_stackable_with_member);
+        },
+
         get memberDiscountApplied() {
+            if (!this.isStackable) return 0;
             return Math.min(this.memberDiscount, $store.cart.subtotal);
         },
 
+        get maxPointsAllowed() {
+            const remainingSubtotal = Math.max(0, $store.cart.subtotal - this.memberDiscountApplied - this.couponDiscountAmount);
+            const maxRupiahAllowed = Math.floor(remainingSubtotal * 0.5);
+            const maxPoints = Math.floor(maxRupiahAllowed / this.pointValueInIdr);
+            return Math.max(0, Math.min(this.userPointsBalance, maxPoints));
+        },
+
+        get pointsDiscountAmount() {
+            if (!this.usePoints || this.pointsToRedeem <= 0) return 0;
+            const validPoints = Math.min(parseInt(this.pointsToRedeem) || 0, this.maxPointsAllowed);
+            return validPoints * this.pointValueInIdr;
+        },
+
+        get totalDiscount() {
+            return this.memberDiscountApplied + this.couponDiscountAmount + this.pointsDiscountAmount;
+        },
+
         get grandTotal() {
-            return Math.max(0, $store.cart.subtotal + this.shippingCost - this.memberDiscountApplied);
+            return Math.max(0, $store.cart.subtotal + this.shippingCost - this.totalDiscount);
+        },
+
+        get projectedPointsEarned() {
+            return Math.floor(this.grandTotal / this.earnRatePerRupiah);
+        },
+
+        async applyCoupon() {
+            const code = this.couponCodeInput.trim();
+            if (!code) {
+                this.couponError = 'Masukkan kode promo terlebih dahulu.';
+                return;
+            }
+
+            this.isCheckingCoupon = true;
+            this.couponError = '';
+
+            try {
+                const response = await fetch('{{ route('checkout.validate-coupon') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').getAttribute('content'),
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        code: code,
+                        subtotal: $store.cart.subtotal,
+                        phone: this.phone,
+                        email: this.email
+                    })
+                });
+
+                const data = await response.json();
+                if (response.ok && data.success) {
+                    this.appliedCoupon = data.coupon;
+                    this.couponError = '';
+                    if (this.pointsToRedeem > this.maxPointsAllowed) {
+                        this.pointsToRedeem = this.maxPointsAllowed;
+                    }
+                } else {
+                    this.couponError = data.message || 'Kupon tidak valid.';
+                    this.appliedCoupon = null;
+                }
+            } catch (err) {
+                this.couponError = 'Terjadi kesalahan saat validasi kupon.';
+            } finally {
+                this.isCheckingCoupon = false;
+            }
+        },
+
+        removeCoupon() {
+            this.appliedCoupon = null;
+            this.couponCodeInput = '';
+            this.couponError = '';
+        },
+
+        togglePoints(checked) {
+            this.usePoints = checked;
+            if (checked) {
+                this.pointsToRedeem = this.maxPointsAllowed;
+            } else {
+                this.pointsToRedeem = 0;
+            }
+        },
+
+        setAllPoints() {
+            this.pointsToRedeem = this.maxPointsAllowed;
         },
 
         selectSavedAddress(addr) {
@@ -112,6 +215,9 @@
                         customer_city: this.city,
                         shipping_method: this.shippingMethod,
                         payment_method: this.paymentMethod,
+                        coupon_code: this.appliedCoupon ? this.appliedCoupon.code : null,
+                        use_points: this.usePoints,
+                        points_to_redeem: this.usePoints ? (parseInt(this.pointsToRedeem) || 0) : 0,
                         items: $store.cart.items,
                         is_gift: $store.cart.isGift,
                         gift_recipient_name: $store.cart.giftData.recipientName,
@@ -529,6 +635,108 @@
                     </template>
                 </div>
 
+                <!-- Promo Code / Voucher Box -->
+                <div class="pt-4 border-t border-[#ede7e2] space-y-2">
+                    <label class="block text-xs font-bold text-[#2d180c]">Punya Kupon Promo?</label>
+                    <template x-if="!appliedCoupon">
+                        <div class="space-y-1.5">
+                            <div class="flex items-center gap-2">
+                                <div class="relative flex-1">
+                                    <input type="text" 
+                                           x-model="couponCodeInput" 
+                                           placeholder="Masukkan kode voucher"
+                                           @keydown.enter.prevent="applyCoupon()"
+                                           class="w-full px-3.5 py-2 rounded-xl border border-[#ede7e2] text-xs font-mono font-bold uppercase focus:border-[#b87d4b] outline-none placeholder:font-sans placeholder:normal-case">
+                                </div>
+                                <button type="button" 
+                                        @click="applyCoupon()" 
+                                        :disabled="isCheckingCoupon"
+                                        class="px-4 py-2 rounded-xl bg-[#2d180c] hover:bg-[#432311] text-white text-xs font-bold transition disabled:opacity-50 cursor-pointer shrink-0">
+                                    <span x-show="!isCheckingCoupon">Terapkan</span>
+                                    <span x-show="isCheckingCoupon">...</span>
+                                </button>
+                            </div>
+                            <p x-show="couponError" x-cloak class="text-[11px] text-rose-600 font-semibold" x-text="couponError"></p>
+                        </div>
+                    </template>
+
+                    <template x-if="appliedCoupon">
+                        <div class="p-3 rounded-2xl bg-emerald-50 border border-emerald-200 flex items-center justify-between gap-2">
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-extrabold text-xs text-emerald-900 font-mono tracking-wider" x-text="appliedCoupon.code"></span>
+                                    <span class="text-[10px] bg-emerald-200/70 text-emerald-900 px-1.5 py-0.2 rounded font-bold" x-text="appliedCoupon.formatted_value"></span>
+                                </div>
+                                <p class="text-[11px] text-emerald-800 font-medium truncate mt-0.5" x-text="appliedCoupon.name"></p>
+                                <template x-if="!isStackable">
+                                    <p class="text-[10px] text-amber-700 font-medium mt-0.5">*(Diskon member VIP dikesampingkan untuk kupon ini)</p>
+                                </template>
+                            </div>
+                            <button type="button" 
+                                    @click="removeCoupon()" 
+                                    class="text-xs text-rose-600 hover:text-rose-800 font-bold px-2 py-1 rounded-lg hover:bg-rose-100/50 transition cursor-pointer shrink-0">
+                                Hapus
+                            </button>
+                        </div>
+                    </template>
+                </div>
+
+                @auth
+                <!-- Cookie Crumbs Loyalty Points Box -->
+                <div class="pt-4 border-t border-[#ede7e2] space-y-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-2">
+                            <span class="text-base">🍪</span>
+                            <div>
+                                <span class="font-bold text-xs text-[#2d180c]">Cookie Crumbs</span>
+                                <span class="text-[10px] text-[#6d4630] block">Saldo: <strong class="text-[#2d180c]" x-text="userPointsBalance + ' Crumbs'"></strong> (setara <span x-text="formatRupiah(userPointsBalance * 50)"></span>)</span>
+                            </div>
+                        </div>
+
+                        <template x-if="userPointsBalance > 0 && maxPointsAllowed > 0">
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" 
+                                       :checked="usePoints" 
+                                       @change="togglePoints($event.target.checked)" 
+                                       class="sr-only peer">
+                                <div class="w-9 h-5 bg-stone-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-stone-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-[#b87d4b]"></div>
+                            </label>
+                        </template>
+                    </div>
+
+                    <template x-if="userPointsBalance <= 0">
+                        <p class="text-[11px] text-[#6d4630] italic">
+                            Kumpulkan poin Cookie Crumbs di setiap belanjaan dan tukarkan jadi potongan harga!
+                        </p>
+                    </template>
+
+                    <template x-if="usePoints && maxPointsAllowed > 0">
+                        <div class="p-3 rounded-2xl bg-[#f6efe8] border border-[#ede7e2] space-y-2.5">
+                            <div class="flex items-center justify-between text-xs">
+                                <span class="font-bold text-[#2d180c]">Tukarkan Poin:</span>
+                                <span class="font-bold text-[#b87d4b]" x-text="'-' + formatRupiah(pointsDiscountAmount)"></span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <input type="range" 
+                                       min="1" 
+                                       :max="maxPointsAllowed" 
+                                       x-model="pointsToRedeem" 
+                                       class="w-full accent-[#b87d4b] cursor-pointer">
+                                <input type="number" 
+                                       min="1" 
+                                       :max="maxPointsAllowed" 
+                                       x-model="pointsToRedeem" 
+                                       class="w-16 px-2 py-1 rounded-lg border border-[#ede7e2] text-xs font-bold text-center bg-white outline-none">
+                            </div>
+                            <div class="flex items-center justify-between text-[10px] text-[#6d4630]">
+                                <span>Maks. tukar: <strong x-text="maxPointsAllowed + ' Crumbs'"></strong> (50% subtotal)</span>
+                                <button type="button" @click="setAllPoints()" class="text-[#b87d4b] font-bold hover:underline cursor-pointer">Gunakan Maksimal</button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+                @endauth
+
                 <!-- Price Calculations -->
                 <div class="pt-4 border-t border-[#ede7e2] space-y-2.5 text-sm">
                     <div class="flex items-center justify-between text-stone-600 text-xs">
@@ -546,7 +754,7 @@
                         <span class="uppercase text-[10px] bg-[#f6efe8] text-[#b87d4b] px-2 py-0.5 rounded-full font-bold">Gratis</span>
                     </div>
 
-                    <template x-if="memberDiscount > 0">
+                    <template x-if="memberDiscountApplied > 0">
                         <div class="flex items-center justify-between text-emerald-700 text-xs font-semibold bg-emerald-50/80 p-2.5 rounded-xl border border-emerald-200/60">
                             <span class="flex items-center gap-1.5">
                                 <span>⭐</span>
@@ -556,10 +764,37 @@
                         </div>
                     </template>
 
+                    <template x-if="couponDiscountAmount > 0">
+                        <div class="flex items-center justify-between text-purple-800 text-xs font-semibold bg-purple-50/80 p-2.5 rounded-xl border border-purple-200/60">
+                            <span class="flex items-center gap-1.5">
+                                <span>🎟️</span>
+                                <span>Kupon Promo (<span x-text="appliedCoupon.code"></span>)</span>
+                            </span>
+                            <span class="font-bold" x-text="'-' + formatRupiah(couponDiscountAmount)"></span>
+                        </div>
+                    </template>
+
+                    <template x-if="pointsDiscountAmount > 0">
+                        <div class="flex items-center justify-between text-amber-800 text-xs font-semibold bg-amber-50/80 p-2.5 rounded-xl border border-amber-200/60">
+                            <span class="flex items-center gap-1.5">
+                                <span>🍪</span>
+                                <span>Tukar Cookie Crumbs (<span x-text="pointsToRedeem"></span> poin)</span>
+                            </span>
+                            <span class="font-bold" x-text="'-' + formatRupiah(pointsDiscountAmount)"></span>
+                        </div>
+                    </template>
+
                     <div class="pt-3 border-t border-[#ede7e2] flex items-center justify-between">
                         <span class="font-bold text-sm text-[#2d180c]">Total Pembayaran</span>
                         <span class="font-extrabold text-2xl text-[#b87d4b]" x-text="formatRupiah(grandTotal)"></span>
                     </div>
+
+                    <template x-if="projectedPointsEarned > 0">
+                        <div class="mt-2 p-2.5 rounded-xl bg-[#faf7f4] border border-[#ede7e2] flex items-center gap-2 text-xs text-[#6d4630]">
+                            <span class="text-sm">🍪</span>
+                            <span>Kamu akan mendapatkan <strong class="text-[#2d180c] font-black" x-text="'+' + projectedPointsEarned + ' Cookie Crumbs'"></strong> setelah pesanan dibayar!</span>
+                        </div>
+                    </template>
                 </div>
 
                 <!-- Inline Error Alert right above button -->

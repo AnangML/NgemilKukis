@@ -33,10 +33,27 @@
             </div>
         </div>
 
-        <div class="bg-[#faf7f4] p-4 rounded-2xl border border-[#ede7e2] text-right sm:text-right w-full sm:w-auto">
-            <span class="text-[10px] font-bold uppercase tracking-wider text-[#6d4630] block">Keuntungan Member Aktif</span>
-            <p class="text-lg font-extrabold text-[#b87d4b]">Diskon Rp {{ number_format($user->member_discount_amount ?? 10000, 0, ',', '.') }}</p>
-            <span class="text-[11px] text-[#6d4630]">Otomatis terpotong di halaman Checkout</span>
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:w-auto">
+            <!-- Member Discount Box -->
+            <div class="bg-[#faf7f4] p-4 rounded-2xl border border-[#ede7e2] text-left sm:text-right">
+                <span class="text-[10px] font-bold uppercase tracking-wider text-[#6d4630] block">Diskon Member VIP</span>
+                <p class="text-base font-extrabold text-[#b87d4b]">Rp {{ number_format($user->member_discount_amount ?? 10000, 0, ',', '.') }}</p>
+                <span class="text-[10px] text-[#6d4630]">Otomatis di Checkout</span>
+            </div>
+
+            <!-- Cookie Crumbs Card -->
+            <div class="bg-gradient-to-br from-[#2d180c] to-[#432311] text-white p-4 rounded-2xl border border-[#2d180c] shadow-xs text-left sm:text-right min-w-[190px]">
+                <div class="flex items-center sm:justify-end gap-1.5">
+                    <span class="text-xs">🍪</span>
+                    <span class="text-[10px] font-bold uppercase tracking-wider text-[#f6efe8]/80 block">Cookie Crumbs</span>
+                </div>
+                <p class="text-lg font-black text-amber-300 mt-0.5">
+                    {{ number_format($user->points_balance ?? 0) }} <span class="text-xs font-normal text-white">Crumbs</span>
+                </p>
+                <span class="text-[10px] text-[#f6efe8]/80 block">
+                    &asymp; Rp {{ number_format(($user->points_balance ?? 0) * 50, 0, ',', '.') }} diskon
+                </span>
+            </div>
         </div>
     </div>
 
@@ -70,7 +87,7 @@
                             Nama Lengkap
                         </label>
                         <input type="text" name="name" value="{{ old('name', $user->name) }}" required
-                               class="w-full px-4 py-2.5 rounded-xl border border-[#ede7e2] focus:border-[#b87d4b] outline-none text-xs text-[#2d180c]">
+                                class="w-full px-4 py-2.5 rounded-xl border border-[#ede7e2] focus:border-[#b87d4b] outline-none text-xs text-[#2d180c]">
                     </div>
 
                     <div>
@@ -78,7 +95,7 @@
                             Alamat Email
                         </label>
                         <input type="email" name="email" value="{{ old('email', $user->email) }}" required
-                               class="w-full px-4 py-2.5 rounded-xl border border-[#ede7e2] focus:border-[#b87d4b] outline-none text-xs text-[#2d180c]">
+                                class="w-full px-4 py-2.5 rounded-xl border border-[#ede7e2] focus:border-[#b87d4b] outline-none text-xs text-[#2d180c]">
                     </div>
 
                     <div>
@@ -86,7 +103,7 @@
                             No. Telepon / WhatsApp
                         </label>
                         <input type="tel" name="phone" value="{{ old('phone', $user->phone) }}" placeholder="081234567890"
-                               class="w-full px-4 py-2.5 rounded-xl border border-[#ede7e2] focus:border-[#b87d4b] outline-none text-xs text-[#2d180c]">
+                                class="w-full px-4 py-2.5 rounded-xl border border-[#ede7e2] focus:border-[#b87d4b] outline-none text-xs text-[#2d180c]">
                     </div>
 
                     <div>
@@ -94,7 +111,7 @@
                             Kota Pengiriman
                         </label>
                         <input type="text" name="saved_city" value="{{ old('saved_city', $user->saved_city ?? 'Jakarta') }}" placeholder="Contoh: Jakarta Selatan"
-                               class="w-full px-4 py-2.5 rounded-xl border border-[#ede7e2] focus:border-[#b87d4b] outline-none text-xs text-[#2d180c]">
+                                class="w-full px-4 py-2.5 rounded-xl border border-[#ede7e2] focus:border-[#b87d4b] outline-none text-xs text-[#2d180c]">
                     </div>
 
                     <div>
@@ -182,88 +199,150 @@
             </div>
         </div>
 
-        <!-- Right: Riwayat Pesanan Saya (7 cols) -->
-        <div class="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 border border-[#ede7e2] shadow-xs space-y-6">
-            <div class="flex items-center justify-between border-b border-[#ede7e2] pb-4">
-                <div>
-                    <h3 class="text-lg font-extrabold text-[#2d180c]">Riwayat Pesanan Anda</h3>
-                    <p class="text-xs text-[#6d4630] mt-0.5">Daftar semua pesanan kukis yang pernah Anda buat di NgemilKukis.</p>
+        <!-- Right: Riwayat Pesanan Saya & Buku Catatan Poin (7 cols) -->
+        <div class="lg:col-span-7 space-y-6">
+            
+            <!-- Riwayat Pesanan Saya -->
+            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-[#ede7e2] shadow-xs space-y-6">
+                <div class="flex items-center justify-between border-b border-[#ede7e2] pb-4">
+                    <div>
+                        <h3 class="text-lg font-extrabold text-[#2d180c]">Riwayat Pesanan Anda</h3>
+                        <p class="text-xs text-[#6d4630] mt-0.5">Daftar semua pesanan kukis yang pernah Anda buat di NgemilKukis.</p>
+                    </div>
+                    <a href="{{ route('home') }}#katalog" 
+                       class="inline-flex items-center gap-1.5 text-xs font-bold text-[#b87d4b] hover:underline">
+                        <span>+ Pesan Lagi</span>
+                    </a>
                 </div>
-                <a href="{{ route('home') }}#katalog" 
-                   class="inline-flex items-center gap-1.5 text-xs font-bold text-[#b87d4b] hover:underline">
-                    <span>+ Pesan Lagi</span>
-                </a>
-            </div>
 
-            <div class="space-y-4">
-                @forelse($orders as $order)
-                    <div class="p-5 rounded-2xl border border-[#ede7e2] bg-white hover:border-[#b87d4b]/40 transition space-y-3">
-                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#ede7e2]">
-                            <div>
-                                <span class="font-extrabold text-sm text-[#2d180c]">{{ $order->order_number }}</span>
-                                <span class="text-xs text-[#6d4630] block sm:inline sm:ml-2">{{ $order->created_at->format('d M Y, H:i') }} WIB</span>
+                <div class="space-y-4">
+                    @forelse($orders as $order)
+                        <div class="p-5 rounded-2xl border border-[#ede7e2] bg-white hover:border-[#b87d4b]/40 transition space-y-3">
+                            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-[#ede7e2]">
+                                <div>
+                                    <span class="font-extrabold text-sm text-[#2d180c]">{{ $order->order_number }}</span>
+                                    <span class="text-xs text-[#6d4630] block sm:inline sm:ml-2">{{ $order->created_at->format('d M Y, H:i') }} WIB</span>
+                                </div>
+
+                                <!-- Status Badge -->
+                                <div>
+                                    @php
+                                        $badge = match($order->status) {
+                                            'paid' => ['bg' => 'bg-emerald-50 text-emerald-800 border-emerald-200', 'label' => 'Sudah Dibayar'],
+                                            'baking' => ['bg' => 'bg-amber-50 text-amber-900 border-amber-200', 'label' => 'Sedang Dipanggang'],
+                                            'shipped' => ['bg' => 'bg-sky-50 text-sky-800 border-sky-200', 'label' => 'Dalam Pengiriman'],
+                                            'delivered' => ['bg' => 'bg-emerald-100 text-emerald-900 border-emerald-300', 'label' => 'Pesanan Selesai'],
+                                            'cancelled' => ['bg' => 'bg-rose-50 text-rose-700 border-rose-200', 'label' => 'Dibatalkan'],
+                                            default => ['bg' => 'bg-stone-100 text-stone-600 border-stone-200', 'label' => 'Menunggu Pembayaran']
+                                        };
+                                    @endphp
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border {{ $badge['bg'] }}">
+                                        {{ $badge['label'] }}
+                                    </span>
+                                </div>
                             </div>
 
-                            <!-- Status Badge -->
-                            <div>
-                                @php
-                                    $badge = match($order->status) {
-                                        'paid' => ['bg' => 'bg-emerald-50 text-emerald-800 border-emerald-200', 'label' => 'Sudah Dibayar'],
-                                        'baking' => ['bg' => 'bg-amber-50 text-amber-900 border-amber-200', 'label' => 'Sedang Dipanggang'],
-                                        'shipped' => ['bg' => 'bg-sky-50 text-sky-800 border-sky-200', 'label' => 'Dalam Pengiriman'],
-                                        'delivered' => ['bg' => 'bg-emerald-100 text-emerald-900 border-emerald-300', 'label' => 'Pesanan Selesai'],
-                                        'cancelled' => ['bg' => 'bg-rose-50 text-rose-700 border-rose-200', 'label' => 'Dibatalkan'],
-                                        default => ['bg' => 'bg-stone-100 text-stone-600 border-stone-200', 'label' => 'Menunggu Pembayaran']
-                                    };
-                                @endphp
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold border {{ $badge['bg'] }}">
-                                    {{ $badge['label'] }}
-                                </span>
+                            <!-- Items Preview -->
+                            <div class="space-y-1.5 text-xs">
+                                @foreach($order->items as $item)
+                                    <div class="flex items-center justify-between text-[#2d180c]">
+                                        <span>{{ $item->quantity }}x {{ $item->product_name }}</span>
+                                        <span class="font-bold">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</span>
+                                    </div>
+                                @endforeach
+
+                                @if($order->discount_amount > 0)
+                                    <div class="flex items-center justify-between text-[#b87d4b] font-bold text-xs pt-1">
+                                        <span>Potongan Diskon Member VIP</span>
+                                        <span>-Rp {{ number_format($order->discount_amount, 0, ',', '.') }}</span>
+                                    </div>
+                                @endif
+
+                                @if($order->coupon_discount_amount > 0)
+                                    <div class="flex items-center justify-between text-purple-700 font-bold text-xs">
+                                        <span>Potongan Kupon ({{ $order->coupon_code }})</span>
+                                        <span>-Rp {{ number_format($order->coupon_discount_amount, 0, ',', '.') }}</span>
+                                    </div>
+                                @endif
+
+                                @if($order->points_discount_amount > 0)
+                                    <div class="flex items-center justify-between text-amber-800 font-bold text-xs">
+                                        <span>Tukar {{ number_format($order->points_redeemed) }} Cookie Crumbs</span>
+                                        <span>-Rp {{ number_format($order->points_discount_amount, 0, ',', '.') }}</span>
+                                    </div>
+                                @endif
+                            </div>
+
+                            <div class="flex items-center justify-between pt-2 border-t border-[#ede7e2] text-xs">
+                                <span class="text-[#6d4630]">Total: <strong class="text-[#2d180c] text-sm">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</strong></span>
+                                <a href="{{ route('orders.show', $order->order_number) }}" 
+                                   class="inline-flex items-center gap-1 font-bold text-[#b87d4b] hover:text-[#a36b3b] transition">
+                                    <span>Lihat Rincian</span>
+                                    <span>&rarr;</span>
+                                </a>
                             </div>
                         </div>
-
-                        <!-- Items Preview -->
-                        <div class="space-y-1.5 text-xs">
-                            @foreach($order->items as $item)
-                                <div class="flex items-center justify-between text-[#2d180c]">
-                                    <span>{{ $item->quantity }}x {{ $item->product_name }}</span>
-                                    <span class="font-bold">Rp {{ number_format($item->subtotal, 0, ',', '.') }}</span>
-                                </div>
-                            @endforeach
-                            @if($order->discount_amount > 0)
-                                <div class="flex items-center justify-between text-[#b87d4b] font-bold text-xs pt-1">
-                                    <span>Potongan Diskon Member VIP</span>
-                                    <span>-Rp {{ number_format($order->discount_amount, 0, ',', '.') }}</span>
-                                </div>
-                            @endif
-                        </div>
-
-                        <div class="flex items-center justify-between pt-2 border-t border-[#ede7e2] text-xs">
-                            <span class="text-[#6d4630]">Total Pembayaran: <strong class="text-[#2d180c] text-sm">Rp {{ number_format($order->total_amount, 0, ',', '.') }}</strong></span>
-                            <a href="{{ route('orders.show', $order->order_number) }}" 
-                               class="inline-flex items-center gap-1 font-bold text-[#b87d4b] hover:text-[#a36b3b] transition">
-                                <span>Lihat Rincian</span>
-                                <span>&rarr;</span>
+                    @empty
+                        <div class="text-center py-12 space-y-3">
+                            <p class="text-sm font-bold text-[#2d180c]">Belum ada pesanan aktif</p>
+                            <p class="text-xs text-[#6d4630]">Pilih varian kukis artisan favoritmu dan rasakan sensasi hangat mentega Prancis murni!</p>
+                            <a href="{{ route('home') }}#katalog" 
+                               class="inline-flex items-center gap-2 bg-[#b87d4b] hover:bg-[#a36b3b] text-white text-xs font-bold px-6 py-3 rounded-full shadow-sm transition">
+                                <span>Mulai Belanja Kukis</span>
                             </a>
                         </div>
+                    @endforelse
+                </div>
+
+                @if($orders->hasPages())
+                    <div class="pt-4">
+                        {{ $orders->links() }}
                     </div>
-                @empty
-                    <div class="text-center py-12 space-y-3">
-                        <p class="text-sm font-bold text-[#2d180c]">Belum ada pesanan aktif</p>
-                        <p class="text-xs text-[#6d4630]">Pilih varian kukis artisan favoritmu dan rasakan sensasi hangat mentega Prancis murni!</p>
-                        <a href="{{ route('home') }}#katalog" 
-                           class="inline-flex items-center gap-2 bg-[#b87d4b] hover:bg-[#a36b3b] text-white text-xs font-bold px-6 py-3 rounded-full shadow-sm transition">
-                            <span>Mulai Belanja Kukis</span>
-                        </a>
-                    </div>
-                @endforelse
+                @endif
             </div>
 
-            @if($orders->hasPages())
-                <div class="pt-4">
-                    {{ $orders->links() }}
+            <!-- Cookie Crumbs Loyalty Ledger Card -->
+            <div class="bg-white rounded-3xl p-6 sm:p-8 border border-[#ede7e2] shadow-xs space-y-5">
+                <div class="flex items-center justify-between border-b border-[#ede7e2] pb-4">
+                    <div class="flex items-center gap-3">
+                        <span class="text-2xl">🍪</span>
+                        <div>
+                            <h3 class="text-base font-extrabold text-[#2d180c]">Buku Catatan Cookie Crumbs</h3>
+                            <p class="text-xs text-[#6d4630] mt-0.5">Riwayat perolehan dan penukaran poin loyalitas Anda.</p>
+                        </div>
+                    </div>
+                    <span class="text-xs font-extrabold text-[#b87d4b] bg-[#f6efe8] px-3 py-1 rounded-full border border-[#ede7e2]">
+                        1 Crumb = Rp 50
+                    </span>
                 </div>
-            @endif
+
+                <div class="divide-y divide-[#ede7e2]">
+                    @forelse($pointTransactions as $tx)
+                        <div class="py-3.5 flex items-center justify-between gap-4 first:pt-0 last:pb-0 text-xs">
+                            <div class="min-w-0">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold text-[#2d180c]">{{ $tx->type_label }}</span>
+                                    <span class="text-[10px] text-stone-400">{{ $tx->created_at->format('d M Y, H:i') }}</span>
+                                </div>
+                                <p class="text-[11px] text-[#6d4630] truncate mt-0.5">{{ $tx->description }}</p>
+                            </div>
+
+                            <div class="text-right shrink-0">
+                                <span class="font-black text-sm {{ $tx->amount > 0 ? 'text-emerald-700' : 'text-rose-600' }}">
+                                    {{ $tx->amount > 0 ? '+' : '' }}{{ number_format($tx->amount) }} Crumbs
+                                </span>
+                                <span class="text-[10px] text-stone-500 block">Saldo: {{ number_format($tx->balance_after) }}</span>
+                            </div>
+                        </div>
+                    @empty
+                        <div class="text-center py-8 text-[#6d4630] space-y-2">
+                            <p class="text-xs font-bold text-[#2d180c]">Belum ada aktivitas poin Cookie Crumbs</p>
+                            <p class="text-[11px] text-stone-500">Poin otomatis bertambah setiap Anda belanja (Rp 1.000 = 1 Crumb) dan dapat ditukar diskon di checkout!</p>
+                        </div>
+                    @endforelse
+                </div>
+            </div>
+
         </div>
 
     </div>

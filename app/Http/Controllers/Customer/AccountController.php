@@ -35,7 +35,13 @@ class AccountController extends Controller
 
         $addresses = $user->addresses()->latest()->get();
 
-        return view('shop.account', compact('user', 'orders', 'addresses'));
+        $pointTransactions = $user->pointTransactions()
+            ->with('order')
+            ->latest('id')
+            ->take(15)
+            ->get();
+
+        return view('shop.account', compact('user', 'orders', 'addresses', 'pointTransactions'));
     }
 
     /**

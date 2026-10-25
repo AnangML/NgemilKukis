@@ -14,7 +14,7 @@
   <img src="https://img.shields.io/badge/Tailwind_CSS-v4.0-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white" alt="Tailwind CSS" />
   <img src="https://img.shields.io/badge/Alpine.js-3.x-8BC0D0?style=for-the-badge&logo=alpine.js&logoColor=white" alt="Alpine.js" />
   <img src="https://img.shields.io/badge/Xendit-Payment_Gateway-1E40AF?style=for-the-badge&logo=xendit&logoColor=white" alt="Xendit" />
-  <img src="https://img.shields.io/badge/Tests-51%20Passed%20(100%25)-10B981?style=for-the-badge&logo=phpunit&logoColor=white" alt="PHPUnit Tests" />
+  <img src="https://img.shields.io/badge/Tests-61%20Passed%20(100%25)-10B981?style=for-the-badge&logo=phpunit&logoColor=white" alt="PHPUnit Tests" />
 </p>
 
 ---
@@ -23,7 +23,7 @@
 
 **NgemilKukis** adalah platform toko online kukis artisanal (*soft-baked cookies*) modern yang dirancang untuk memberikan pengalaman berbelanja yang lezat, cepat, dan terpercaya bagi pelanggan, serta menyediakan sistem manajemen operasional internal yang komprehensif untuk pemilik bisnis, tim operasional dapur/penjual, dan tim customer service.
 
-Dibangun dengan arsitektur **Laravel Monolith + Blade + Alpine.js** serta **Tailwind CSS v4**, aplikasi ini memadukan performa tinggi, keandalan proteksi transaksi, estetika desain visual premium berpedoman **Aturan 60-30-10**, dan sistem kontrol peran berbasis **RBAC (Role-Based Access Control)** yang lengkap dengan **Audit Trail (Log Aktivitas)**.
+Dibangun dengan arsitektur **Laravel Monolith + Blade + Alpine.js** serta **Tailwind CSS v4**, aplikasi ini memadukan performa tinggi, keandalan proteksi transaksi, estetika desain visual premium berpedoman **Aturan 60-30-10**, dan sistem kontrol peran berbasis **RBAC (Role-Based Access Control)** yang lengkap dengan **Audit Trail (Log Aktivitas)**, **Kupon Promo & Diskon**, serta program loyalitas **Cookie Crumbs**.
 
 ---
 
@@ -33,6 +33,8 @@ Dibangun dengan arsitektur **Laravel Monolith + Blade + Alpine.js** serta **Tail
 - **Katalog Kukis Interaktif**: Navigasi katalog yang responsif dengan filter kategori, pencarian real-time, badge khusus (*Best Seller*, *Seasonal*, *Limited Edition*), dan deskripsi rasa yang menggugah selera.
 - **Cart Drawer Dinamis**: Keranjang belanja samping (*flyout drawer*) yang memungkinkan perubahan jumlah pesanan dan penambahan catatan khusus per pesanan tanpa memuat ulang halaman.
 - **Personalisasi Kartu Ucapan (Gift Card)**: Fasilitas kado/hampers lengkap dengan pilihan template kartu ucapan, nama pengirim, nama penerima, dan pesan personal untuk momen spesial (Ulang Tahun, Lebaran, Natal, Kasih Sayang).
+- **Kupon Promo & Voucher Diskon**: Input kupon belanja langsung saat checkout dengan validasi instan (cek tanggal kadaluarsa, batas belanja, kuota kupon, dan batas pemakaian per pengguna).
+- **Cookie Crumbs Loyalty Points**: Tukarkan poin loyalitas pelanggan langsung saat checkout dengan kalkulasi slider interaktif (1 Crumb = Rp 50, potongan hingga 50% subtotal).
 - **Fast 1-Click Checkout**: Formulir pemesanan cepat dengan proteksi **Idempotency Key** untuk mencegah transaksi ganda saat koneksi tidak stabil.
 - **Integrasi Pembayaran Xendit**: Dukungan pembayaran otomatis via **QRIS**, Virtual Account (BCA, Mandiri, BNI, BRI), E-Wallet (OVO, DANA, ShopeePay), dan Kartu Kredit.
 - **Simulator Pembayaran Lokal**: Endpoint simulasi pembayaran instan untuk mempermudah demonstrasi dan pengujian alur pesanan di lingkungan lokal tanpa kartu kredit / saldo live.
@@ -40,8 +42,13 @@ Dibangun dengan arsitektur **Laravel Monolith + Blade + Alpine.js** serta **Tail
 
 ---
 
-### 👑 2. Kukis VIP Club (Keanggotaan & 3 Metode Login)
+### 👑 2. Kukis VIP Club & Program Loyalitas "Cookie Crumbs"
 - **Diskon Member Otomatis**: Potongan harga instan **Rp 10.000** pada setiap transaksi saat pelanggan berbelanja dalam keadaan login.
+- **Sistem Poin Cookie Crumbs**:
+  - **Cashback Poin Belanja**: Dapatkan 1 Cookie Crumb setiap pembelanjaan Rp 1.000 yang berhasil dibayar.
+  - **Penukaran Poin di Checkout**: 1 Cookie Crumb bernilai potongan harga Rp 50 (maksimal 50% dari subtotal belanja).
+  - **Bonus Selamat Datang**: Bonus instan **+50 Cookie Crumbs** langsung aktif saat pelanggan mendaftar akun baru.
+  - **VIP Loyalty Card & Ledger**: Kartu saldo poin elegan di halaman akun pelanggan lengkap dengan buku catatan riwayat transaksi poin (*earned, redeemed, bonus*).
 - **3 Opsi Masuk Cepat**:
   1. **Google Auth (1-Click Login)**: Masuk instan sekali klik menggunakan akun Google (dilengkapi simulator demo untuk lokal).
   2. **Email & Kata Sandi**: Registrasi akun mandiri klasik bagi pelanggan yang menyukai kredensial email.
@@ -61,6 +68,7 @@ Portal staf internal terpadu di [`/admin/login`](http://localhost:8000/admin/log
 | **Dashboard Metrik Penjualan** | ✅ Semua Metrik | ✅ Metrik Pesanan & Stok | ✅ Ringkasan Pesanan | ❌ |
 | **Katalog Produk & Atur Stok** | ✅ CRUD Lengkap | ✅ Tambah & Atur Stok | ❌ Dibatasi (Read-only) | ❌ |
 | **Kelola Template Kartu Ucapan** | ✅ CRUD Lengkap | ✅ Tambah & Edit | ❌ Dibatasi (Read-only) | ❌ |
+| **Kelola Kupon Promo & Diskon** | ✅ CRUD Lengkap | ✅ Tambah & Atur Kupon | ❌ Dibatasi (Read-only) | ❌ |
 | **Kelola Pesanan & Status** | ✅ Kelola Penuh | ✅ Update Dapur & Kurir | ✅ Update Catatan / Komplain | 👁️ Pesanan Sendiri |
 | **Pengaturan Tampilan & Brand** | ✅ Akses Penuh | ❌ Dilarang (403) | ❌ Dilarang (403) | ❌ |
 | **Manajemen Akun Staf** | ✅ Kelola Penuh | ❌ Dilarang (403) | ❌ Dilarang (403) | ❌ |

@@ -39,6 +39,9 @@ class StoreOrderRequest extends FormRequest
             'gift_card_template_id' => ['nullable', 'exists:greeting_card_templates,id'],
             'gift_message' => ['nullable', 'string', 'max:600'],
             'notes' => ['nullable', 'string', 'max:500'],
+            'coupon_code' => ['nullable', 'string', 'max:50'],
+            'use_points' => ['nullable', 'boolean'],
+            'points_to_redeem' => ['nullable', 'integer', 'min:0'],
         ];
     }
 }

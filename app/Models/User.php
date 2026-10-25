@@ -23,6 +23,7 @@ use Illuminate\Notifications\Notifiable;
     'saved_address',
     'saved_city',
     'member_discount_amount',
+    'points_balance',
     'phone_verified_at',
 ])]
 #[Hidden(['password', 'remember_token'])]
@@ -43,6 +44,7 @@ class User extends Authenticatable
             'phone_verified_at' => 'datetime',
             'password' => 'hashed',
             'member_discount_amount' => 'integer',
+            'points_balance' => 'integer',
         ];
     }
 
@@ -180,5 +182,41 @@ class User extends Authenticatable
     public function addresses(): HasMany
     {
         return $this->hasMany(CustomerAddress::class);
+    }
+
+    /**
+     * Cookie Crumbs point ledger transactions.
+     *
+     * @return HasMany<PointTransaction, $this>
+     */
+    public function pointTransactions(): HasMany
+    {
+        return $this->hasMany(PointTransaction::class);
+    }
+
+    /**
+     * Coupon usages by this customer.
+     *
+     * @return HasMany<CouponUsage, $this>
+     */
+    public function couponUsages(): HasMany
+    {
+        return $this->hasMany(CouponUsage::class);
+    }
+
+    /**
+     * Rupiah equivalent of points balance.
+     */
+    public function getPointsValueIdrAttribute(): int
+    {
+        return $this->points_balance * 50;
+    }
+
+    /**
+     * Formatted points balance string.
+     */
+    public function getFormattedPointsAttribute(): string
+    {
+        return number_format($this->points_balance, 0, ',', '.').' Crumbs';
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Testing;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Services\ActivityLogger;
+use App\Services\LoyaltyPointService;
 use Illuminate\Http\RedirectResponse;
 
 class SimulatePaymentController extends Controller
@@ -27,6 +28,8 @@ class SimulatePaymentController extends Controller
         $order->update([
             'status' => 'paid',
         ]);
+
+        app(LoyaltyPointService::class)->earnPointsForOrder($order);
 
         ActivityLogger::order(
             'order.paid_simulated',

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\AuthController;
+use App\Http\Controllers\Admin\CouponController as AdminCouponController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GreetingCardController;
 use App\Http\Controllers\Admin\ProductController;
@@ -12,6 +13,7 @@ use App\Http\Controllers\Auth\CustomerGoogleAuthController;
 use App\Http\Controllers\Auth\CustomerPhoneAuthController;
 use App\Http\Controllers\CatalogController;
 use App\Http\Controllers\CheckoutController;
+use App\Http\Controllers\CouponController;
 use App\Http\Controllers\Customer\AccountController;
 use App\Http\Controllers\CustomerOrderController;
 use App\Http\Controllers\OrderController;
@@ -48,6 +50,7 @@ Route::get('/pesanan', [CustomerOrderController::class, 'index'])->name('custome
 // Checkout Domain
 Route::get('/checkout', [CheckoutController::class, 'index'])->name('checkout');
 Route::post('/checkout', [OrderController::class, 'store'])->name('checkout.place');
+Route::post('/checkout/validate-coupon', [CouponController::class, 'validateCoupon'])->name('checkout.validate-coupon');
 
 // Order Lifecycle Domain
 Route::get('/order/{orderNumber}', [OrderController::class, 'show'])->name('orders.show');
@@ -72,7 +75,7 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/orders/{order}', [App\Http\Controllers\Admin\OrderController::class, 'show'])->name('orders.show');
         Route::patch('/orders/{order}/status', [App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('orders.update-status');
 
-        // Products Catalog & Greeting Cards Management (Admin & Seller)
+        // Products Catalog, Greeting Cards & Coupons Management (Admin & Seller)
         Route::middleware('role:admin,seller')->group(function () {
             Route::patch('products/{product}/toggle', [ProductController::class, 'toggleStatus'])->name('products.toggle');
             Route::patch('products/{product}/toggle-featured', [ProductController::class, 'toggleFeatured'])->name('products.toggle-featured');
@@ -80,6 +83,9 @@ Route::prefix('admin')->name('admin.')->group(function () {
 
             Route::patch('greeting-cards/{greetingCard}/toggle', [GreetingCardController::class, 'toggleStatus'])->name('greeting-cards.toggle');
             Route::resource('greeting-cards', GreetingCardController::class)->except(['show'])->parameters(['greeting-cards' => 'greetingCard']);
+
+            Route::patch('coupons/{coupon}/toggle', [AdminCouponController::class, 'toggleStatus'])->name('coupons.toggle');
+            Route::resource('coupons', AdminCouponController::class)->except(['show']);
         });
 
         // Super Admin Exclusive Management (Settings, Staff Users, Activity Logs)

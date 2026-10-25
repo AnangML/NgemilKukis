@@ -115,10 +115,42 @@
                         <span>Biaya Pengiriman ({{ strtoupper($order->shipping_method) }})</span>
                         <span class="font-bold text-[#2d180c]">Rp {{ number_format($order->shipping_cost, 0, ',', '.') }}</span>
                     </div>
+
+                    @if($order->discount_amount > 0)
+                        <div class="flex justify-between text-emerald-700 font-bold">
+                            <span>Diskon Member VIP</span>
+                            <span>-Rp {{ number_format($order->discount_amount, 0, ',', '.') }}</span>
+                        </div>
+                    @endif
+
+                    @if($order->coupon_discount_amount > 0)
+                        <div class="flex justify-between text-purple-700 font-bold">
+                            <span>Diskon Kupon Promo ({{ $order->coupon_code }})</span>
+                            <span>-Rp {{ number_format($order->coupon_discount_amount, 0, ',', '.') }}</span>
+                        </div>
+                    @endif
+
+                    @if($order->points_discount_amount > 0)
+                        <div class="flex justify-between text-amber-800 font-bold">
+                            <span>Tukar Cookie Crumbs ({{ number_format($order->points_redeemed) }} poin)</span>
+                            <span>-Rp {{ number_format($order->points_discount_amount, 0, ',', '.') }}</span>
+                        </div>
+                    @endif
+
                     <div class="flex justify-between text-sm font-extrabold text-[#2d180c] pt-2 border-t border-[#ede7e2]">
                         <span>Total Pembayaran</span>
                         <span class="text-[#b87d4b] text-base">{{ $order->formattedTotal() }}</span>
                     </div>
+
+                    @if($order->points_earned > 0)
+                        <div class="mt-3 p-3 rounded-2xl bg-[#faf7f4] border border-[#ede7e2] flex items-center justify-between text-xs text-[#6d4630]">
+                            <span class="flex items-center gap-1.5">
+                                <span>🍪</span>
+                                <span class="font-medium">Loyalty Cookie Crumbs:</span>
+                            </span>
+                            <span class="font-bold text-emerald-700">+{{ number_format($order->points_earned) }} Crumbs Diberikan</span>
+                        </div>
+                    @endif
                 </div>
             </div>
 

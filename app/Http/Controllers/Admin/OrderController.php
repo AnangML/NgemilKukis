@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpdateOrderStatusRequest;
 use App\Models\Order;
 use App\Services\ActivityLogger;
+use App\Services\LoyaltyPointService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -61,6 +62,10 @@ class OrderController extends Controller
         $oldStatus = $order->status;
 
         $order->update(['status' => $newStatus]);
+
+        if (in_array($newStatus, ['paid', 'delivered'], true)) {
+            app(LoyaltyPointService::class)->earnPointsForOrder($order);
+        }
 
         $user = $request->user();
         ActivityLogger::order(

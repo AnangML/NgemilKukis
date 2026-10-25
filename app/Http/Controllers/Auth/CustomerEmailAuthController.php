@@ -7,6 +7,7 @@ use App\Http\Requests\Auth\CustomerLoginRequest;
 use App\Http\Requests\Auth\CustomerRegisterRequest;
 use App\Models\User;
 use App\Services\ActivityLogger;
+use App\Services\LoyaltyPointService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -31,6 +32,8 @@ class CustomerEmailAuthController extends Controller
             'auth_provider' => 'email',
             'member_discount_amount' => 10000,
         ]);
+
+        app(LoyaltyPointService::class)->awardWelcomeBonus($user, 50);
 
         Auth::login($user);
         $request->session()->regenerate();

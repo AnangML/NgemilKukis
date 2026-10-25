@@ -2,6 +2,8 @@
 
 namespace App\Services;
 
+use App\Models\Coupon;
+use App\Models\CouponUsage;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\SiteSetting;
@@ -42,6 +44,7 @@ class OrderService
 
     public function __construct(
         protected XenditPaymentService $xenditService,
+        protected LoyaltyPointService $loyaltyPointService,
     ) {}
 
     /**
@@ -118,18 +121,49 @@ class OrderService
             }
 
             $userId = $data['user_id'] ?? auth()->id();
+            $user = $userId ? User::query()->find($userId) : null;
             $discountAmount = 0;
 
-            if ($userId) {
-                $user = User::query()->find($userId);
-                if ($user && $user->isCustomer()) {
-                    $discountAmount = (int) ($user->member_discount_amount ?? 10000);
-                    $discountAmount = min($discountAmount, $subtotal);
+            if ($user && $user->isCustomer()) {
+                $discountAmount = (int) ($user->member_discount_amount ?? 10000);
+                $discountAmount = min($discountAmount, $subtotal);
+            }
+
+            // Coupon Resolution
+            $coupon = null;
+            $couponDiscountAmount = 0;
+            if (! empty($data['coupon_code'])) {
+                $code = strtoupper(trim((string) $data['coupon_code']));
+                $coupon = Coupon::query()->where('code', $code)->first();
+                if ($coupon) {
+                    $eligibility = $coupon->checkEligibility($user, $subtotal, $data['customer_phone'] ?? null, $data['customer_email'] ?? null);
+                    if ($eligibility['eligible']) {
+                        $couponDiscountAmount = $eligibility['discount'];
+                        // If not stackable with member discount, member discount is waived
+                        if (! $coupon->is_stackable_with_member && $discountAmount > 0) {
+                            $discountAmount = 0;
+                        }
+                    } else {
+                        $coupon = null;
+                    }
                 }
             }
 
-            $totalAmount = max(0, $subtotal + $shippingCost - $discountAmount);
+            // Loyalty Points Redemption Resolution
+            $pointsRedeemed = 0;
+            $pointsDiscountAmount = 0;
+            if ($user && ! empty($data['use_points']) && ! empty($data['points_to_redeem'])) {
+                $requestedPoints = (int) $data['points_to_redeem'];
+                $remainingSubtotal = max(0, $subtotal - $discountAmount - $couponDiscountAmount);
+                $maxPoints = $this->loyaltyPointService->calculateMaxRedeemablePoints($remainingSubtotal, $user->points_balance);
+                $pointsRedeemed = min($requestedPoints, $maxPoints);
+                $pointsDiscountAmount = $pointsRedeemed * LoyaltyPointService::POINT_VALUE_IN_IDR;
+            }
+
+            $totalDiscounts = $discountAmount + $couponDiscountAmount + $pointsDiscountAmount;
+            $totalAmount = max(0, $subtotal + $shippingCost - $totalDiscounts);
             $orderNumber = 'NK-'.date('Ymd').'-'.strtoupper(Str::random(5));
+            $pointsEarned = (int) floor($totalAmount / LoyaltyPointService::EARN_RATE_PER_RUPIAH);
 
             $order = Order::query()->create([
                 'order_number' => $orderNumber,
@@ -144,6 +178,12 @@ class OrderService
                 'shipping_cost' => $shippingCost,
                 'subtotal' => $subtotal,
                 'discount_amount' => $discountAmount,
+                'coupon_id' => $coupon?->id,
+                'coupon_code' => $coupon?->code,
+                'coupon_discount_amount' => $couponDiscountAmount,
+                'points_redeemed' => $pointsRedeemed,
+                'points_discount_amount' => $pointsDiscountAmount,
+                'points_earned' => $pointsEarned,
                 'total_amount' => $totalAmount,
                 'status' => 'pending',
                 'payment_method' => $data['payment_method'],
@@ -159,6 +199,25 @@ class OrderService
 
             foreach ($itemsToCreate as $itemData) {
                 $order->items()->create($itemData);
+            }
+
+            // Record coupon usage and increment usage counter
+            if ($coupon) {
+                $coupon->increment('used_count');
+                CouponUsage::create([
+                    'coupon_id' => $coupon->id,
+                    'user_id' => $userId,
+                    'order_id' => $order->id,
+                    'customer_email' => $data['customer_email'] ?? null,
+                    'customer_phone' => $data['customer_phone'],
+                    'discount_amount' => $couponDiscountAmount,
+                    'created_at' => now(),
+                ]);
+            }
+
+            // Debit points from user's balance
+            if ($user && $pointsRedeemed > 0) {
+                $this->loyaltyPointService->redeemPointsForOrder($user, $pointsRedeemed, $order);
             }
 
             // Generate Xendit invoice (Live or mock fallback)
