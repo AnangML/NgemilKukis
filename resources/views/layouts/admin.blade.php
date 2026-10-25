@@ -36,11 +36,16 @@
         <div>
             <!-- Sidebar Header / Brand Logo -->
             <div class="h-20 flex items-center justify-between px-6 border-b border-[#ede7e2]">
-                <a href="{{ route('admin.dashboard') }}" class="group">
-                    <span class="font-extrabold text-xl tracking-tight text-[#2d180c] block leading-none">
-                        Ngemil<span class="text-[#b87d4b]">Kukis.</span>
-                    </span>
-                    <span class="text-[10px] font-bold tracking-wider text-[#6d4630] uppercase mt-1 block">Admin Control</span>
+                <a href="{{ route('admin.dashboard') }}" class="group flex items-center gap-3">
+                    <div class="w-9 h-9 rounded-xl bg-[#f6efe8] border border-[#ede7e2] p-1 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform overflow-hidden shadow-2xs">
+                        <x-brand-logo :logo-url="$siteSettings['site_logo_url'] ?? null" :alt="$siteSettings['site_name'] ?? 'NgemilKukis'" class="w-full h-full object-contain" />
+                    </div>
+                    <div>
+                        <span class="font-extrabold text-xl tracking-tight text-[#2d180c] block leading-none">
+                            Ngemil<span class="text-[#b87d4b]">Kukis.</span>
+                        </span>
+                        <span class="text-[10px] font-bold tracking-wider text-[#6d4630] uppercase mt-1 block">Admin Control</span>
+                    </div>
                 </a>
                 <button @click="sidebarOpen = false" class="lg:hidden text-[#6d4630] hover:text-[#2d180c]">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

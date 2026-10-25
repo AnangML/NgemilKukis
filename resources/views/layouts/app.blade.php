@@ -30,14 +30,19 @@
     <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-[#ede7e2] transition-all">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex items-center justify-between h-20">
-                <!-- Clean Brand Typography Logo -->
-                <a href="{{ route('home') }}" class="group">
-                    <span class="font-extrabold text-2xl sm:text-3xl tracking-tight text-[#2d180c] block leading-none">
-                        {{ $siteSettings['site_name'] ?? 'NgemilKukis' }}<span class="text-[#b87d4b]">.</span>
-                    </span>
-                    <span class="text-[10px] font-semibold tracking-wider text-[#6d4630] uppercase mt-1 block">
-                        {{ $siteSettings['site_tagline'] ?? 'Artisan Fresh Bake' }}
-                    </span>
+                <!-- Clean Brand Typography & Logo -->
+                <a href="{{ route('home') }}" class="group flex items-center gap-3">
+                    <div class="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-[#f6efe8] border border-[#ede7e2] p-1.5 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform overflow-hidden shadow-2xs">
+                        <x-brand-logo :logo-url="$siteSettings['site_logo_url'] ?? null" :alt="$siteSettings['site_name'] ?? 'NgemilKukis'" class="w-full h-full object-contain" />
+                    </div>
+                    <div>
+                        <span class="font-extrabold text-2xl sm:text-3xl tracking-tight text-[#2d180c] block leading-none">
+                            {{ $siteSettings['site_name'] ?? 'NgemilKukis' }}<span class="text-[#b87d4b]">.</span>
+                        </span>
+                        <span class="text-[10px] font-semibold tracking-wider text-[#6d4630] uppercase mt-1 block">
+                            {{ $siteSettings['site_tagline'] ?? 'Artisan Fresh Bake' }}
+                        </span>
+                    </div>
                 </a>
 
                 <!-- Clean Desktop Navigation Links (No Emojis) -->
@@ -338,9 +343,19 @@
             <div class="grid grid-cols-1 md:grid-cols-4 gap-10 pb-12 border-b border-stone-800">
                 <!-- Brand Info -->
                 <div class="space-y-4 md:col-span-1">
-                    <span class="font-extrabold text-2xl tracking-tight text-white block">
-                        {{ $siteSettings['site_name'] ?? 'NgemilKukis' }}<span class="text-[#b87d4b]">.</span>
-                    </span>
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-2xl bg-stone-800 border border-stone-700/60 p-1.5 flex items-center justify-center shrink-0 overflow-hidden shadow-xs">
+                            <x-brand-logo :logo-url="$siteSettings['site_logo_url'] ?? null" :alt="$siteSettings['site_name'] ?? 'NgemilKukis'" class="w-full h-full object-contain" />
+                        </div>
+                        <div>
+                            <span class="font-extrabold text-2xl tracking-tight text-white block leading-none">
+                                {{ $siteSettings['site_name'] ?? 'NgemilKukis' }}<span class="text-[#b87d4b]">.</span>
+                            </span>
+                            <span class="text-[10px] font-medium tracking-wider text-stone-400 uppercase mt-1 block">
+                                {{ $siteSettings['site_tagline'] ?? 'Artisan Fresh Bake' }}
+                            </span>
+                        </div>
+                    </div>
                     <p class="text-xs text-stone-300 leading-relaxed">
                         {{ $siteSettings['about_text'] ?? 'Toko kukis artisan online dengan mentega Prancis murni & cokelat Belgia terbaik. Dipanggang fresh setiap hari dengan penuh kehangatan.' }}
                     </p>

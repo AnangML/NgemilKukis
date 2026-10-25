@@ -27,6 +27,13 @@ class SiteSettingController extends Controller
     {
         $inputs = $request->validated('settings');
 
+        if ($request->hasFile('site_logo_file')) {
+            $path = $request->file('site_logo_file')->store('logos', 'public');
+            $inputs['site_logo_url'] = '/storage/'.$path;
+        } elseif ($request->boolean('remove_site_logo')) {
+            $inputs['site_logo_url'] = '';
+        }
+
         if ($request->hasFile('hero_image_file')) {
             $path = $request->file('hero_image_file')->store('hero', 'public');
             $inputs['hero_image_url'] = '/storage/'.$path;

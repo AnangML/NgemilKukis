@@ -6,8 +6,25 @@
 @section('content')
 <div class="max-w-5xl mx-auto space-y-6" x-data="{ 
     currentTab: 'general',
+    logoPreviewUrl: '{{ $settings['site_logo_url']->value ?? '' }}',
     heroImageMode: 'file',
     heroPreviewUrl: '{{ $settings['hero_image_url']->value ?? 'https://images.unsplash.com/photo-1499636136210-6f4ee915583e?auto=format&fit=crop&w=1000&q=80' }}',
+    previewLogo(event) {
+        const file = event.target.files[0];
+        if (file) {
+            if (file.size > 10 * 1024 * 1024) {
+                alert('Ukuran file logo melebihi batas maksimal 10 MB!');
+                event.target.value = '';
+                return;
+            }
+            this.logoPreviewUrl = URL.createObjectURL(file);
+        }
+    },
+    clearLogo() {
+        this.logoPreviewUrl = '';
+        const fileInput = document.getElementById('site_logo_file_input');
+        if (fileInput) fileInput.value = '';
+    },
     previewHeroImage(event) {
         const file = event.target.files[0];
         if (file) {
@@ -112,6 +129,64 @@
                            value="{{ old('settings.site_tagline', $settings['site_tagline']->value ?? 'Artisan Fresh Bake') }}" 
                            required
                            class="w-full px-4 py-3 rounded-xl border border-[#ede7e2] focus:border-[#b87d4b] outline-none text-sm text-[#2d180c]">
+                </div>
+            </div>
+
+            <!-- Upload Logo Toko Section -->
+            <div class="p-5 sm:p-6 bg-[#faf7f4] rounded-2xl border border-[#ede7e2] space-y-4">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <label class="block text-xs font-bold uppercase tracking-wider text-[#2d180c]">
+                            Logo Toko (Brand Logo)
+                        </label>
+                        <p class="text-xs text-[#6d4630] mt-0.5">
+                            Logo akan tampil di samping kiri nama brand pada navigasi utama, footer, dan panel admin.
+                        </p>
+                    </div>
+                    <span class="text-[10px] bg-[#f6efe8] border border-[#ede7e2] text-[#b87d4b] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
+                        Batas Maks. 10 MB
+                    </span>
+                </div>
+
+                <div class="flex flex-col sm:flex-row items-start sm:items-center gap-5">
+                    <!-- Logo Preview Box -->
+                    <div class="relative w-24 h-24 rounded-2xl bg-white border-2 border-dashed border-[#ede7e2] p-2 flex items-center justify-center shrink-0 shadow-2xs overflow-hidden">
+                        <template x-if="logoPreviewUrl">
+                            <img :src="logoPreviewUrl" alt="Pratinjau Logo Toko" class="w-full h-full object-contain">
+                        </template>
+                        <template x-if="!logoPreviewUrl">
+                            <div class="w-full h-full flex flex-col items-center justify-center text-center p-1">
+                                <x-brand-logo class="w-12 h-12 object-contain" />
+                                <span class="text-[9px] text-[#6d4630] font-semibold mt-1">Default</span>
+                            </div>
+                        </template>
+                    </div>
+
+                    <!-- File Input & Controls -->
+                    <div class="space-y-3 flex-1 w-full">
+                        <div>
+                            <input type="file" 
+                                   id="site_logo_file_input"
+                                   name="site_logo_file" 
+                                   accept=".svg,.png,.jpg,.jpeg,.webp,.gif,.ico,.avif,image/svg+xml,image/png,image/jpeg,image/webp,image/gif,image/x-icon,image/avif"
+                                   @change="previewLogo($event)"
+                                   class="block w-full text-xs text-[#2d180c] file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-[#b87d4b] file:text-white hover:file:bg-[#a36b3b] file:cursor-pointer cursor-pointer border border-[#ede7e2] rounded-xl bg-white p-1">
+                            @error('site_logo_file')
+                                <p class="text-xs font-semibold text-rose-600 mt-1.5">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#6d4630]">
+                            <span>Format didukung: <strong>SVG, PNG, JPG, JPEG, WEBP, GIF, ICO, AVIF</strong> (Maks. 10 MB)</span>
+                            
+                            @if(!empty($settings['site_logo_url']->value ?? ''))
+                                <label class="flex items-center gap-1.5 cursor-pointer font-semibold text-rose-600 hover:text-rose-700">
+                                    <input type="checkbox" name="remove_site_logo" value="1" @click="clearLogo()" class="rounded border-rose-300 text-rose-600 focus:ring-rose-500">
+                                    <span>Hapus logo kustom & kembali ke default</span>
+                                </label>
+                            @endif
+                        </div>
+                    </div>
                 </div>
             </div>
 

@@ -16,6 +16,7 @@ class SiteSettingSeeder extends Seeder
             // General & Brand
             ['key' => 'site_name', 'value' => 'NgemilKukis', 'group' => 'general'],
             ['key' => 'site_tagline', 'value' => 'Artisan Fresh Bake', 'group' => 'general'],
+            ['key' => 'site_logo_url', 'value' => '', 'group' => 'general'],
             ['key' => 'about_text', 'value' => 'Toko kukis artisan online dengan mentega Prancis murni & cokelat Belgia terbaik. Dipanggang fresh setiap hari dengan penuh kehangatan.', 'group' => 'general'],
 
             // Announcement

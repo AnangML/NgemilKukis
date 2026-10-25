@@ -304,6 +304,62 @@ class AdminPanelTest extends TestCase
         Storage::disk('public')->assertExists(str_replace('/storage/', '', $heroSetting->value));
     }
 
+    public function test_admin_can_upload_brand_logo_in_supported_format_under_10mb(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->admin()->create();
+
+        $file = UploadedFile::fake()->create('brand-logo.svg', 1024, 'image/svg+xml');
+
+        $response = $this->actingAs($admin)->put(route('admin.settings.update'), [
+            'settings' => [
+                'site_name' => 'NgemilKukis Artisan',
+            ],
+            'site_logo_file' => $file,
+        ]);
+
+        $response->assertRedirect(route('admin.settings.index'));
+
+        $logoSetting = SiteSetting::where('key', 'site_logo_url')->first();
+        $this->assertNotNull($logoSetting);
+        $this->assertStringStartsWith('/storage/logos/', $logoSetting->value);
+        Storage::disk('public')->assertExists(str_replace('/storage/', '', $logoSetting->value));
+    }
+
+    public function test_brand_logo_exceeding_10mb_is_rejected(): void
+    {
+        Storage::fake('public');
+        $admin = User::factory()->admin()->create();
+
+        // 11 MB file (11264 KB > 10240 KB)
+        $hugeFile = UploadedFile::fake()->create('huge-logo.png', 11264, 'image/png');
+
+        $response = $this->actingAs($admin)->put(route('admin.settings.update'), [
+            'settings' => [
+                'site_name' => 'NgemilKukis',
+            ],
+            'site_logo_file' => $hugeFile,
+        ]);
+
+        $response->assertSessionHasErrors(['site_logo_file']);
+    }
+
+    public function test_admin_can_remove_custom_brand_logo(): void
+    {
+        $admin = User::factory()->admin()->create();
+        SiteSetting::set('site_logo_url', '/storage/logos/old_logo.png');
+
+        $response = $this->actingAs($admin)->put(route('admin.settings.update'), [
+            'settings' => [
+                'site_name' => 'NgemilKukis',
+            ],
+            'remove_site_logo' => '1',
+        ]);
+
+        $response->assertRedirect(route('admin.settings.index'));
+        $this->assertEquals('', SiteSetting::get('site_logo_url'));
+    }
+
     public function test_admin_can_manage_greeting_cards(): void
     {
         $admin = User::factory()->admin()->create();
