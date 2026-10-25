@@ -241,11 +241,8 @@ NgemilKukis/
 
 ## 📄 Lisensi
 
-Projek **NgemilKukis** dikembangkan di bawah lisensi terbuka [MIT License](LICENSE).
+Projek **NgemilKukis** dikembangkan di bawah lisensi terbuka
 Bebas digunakan, dimodifikasi, dan dikembangkan untuk keperluan komersial maupun edukasi.
 
 ---
 
-<p align="center">
-  Dibuat dengan ❤️ dan aroma wangi kukis cokelat artisanal hangat.
-</p>
