@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpdateSiteSettingsRequest;
 use App\Models\SiteSetting;
+use App\Services\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
@@ -44,6 +45,14 @@ class SiteSettingController extends Controller
         }
 
         SiteSetting::clearRuntimeCache();
+
+        $user = $request->user();
+        ActivityLogger::settings(
+            'settings.updated',
+            ($user?->role_label ?? 'Admin').' '.($user?->name ?? '').' memperbarui pengaturan tampilan dan brand toko.',
+            ['updated_keys' => array_keys($inputs)],
+            $user
+        );
 
         return redirect()->route('admin.settings.index')
             ->with('success', 'Pengaturan tampilan & konten dinamis berhasil disimpan!');

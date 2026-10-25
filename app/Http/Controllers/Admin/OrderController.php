@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\UpdateOrderStatusRequest;
 use App\Models\Order;
+use App\Services\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -60,6 +61,19 @@ class OrderController extends Controller
         $oldStatus = $order->status;
 
         $order->update(['status' => $newStatus]);
+
+        $user = $request->user();
+        ActivityLogger::order(
+            'order.status_updated',
+            ($user?->role_label ?? 'Staf').' '.($user?->name ?? '')." memperbarui status pesanan #{$order->order_number} dari '{$oldStatus}' menjadi '{$newStatus}'.",
+            $order,
+            [
+                'order_number' => $order->order_number,
+                'old_status' => $oldStatus,
+                'new_status' => $newStatus,
+            ],
+            $user
+        );
 
         return back()->with('success', "Status pesanan {$order->order_number} berhasil diubah dari '{$oldStatus}' menjadi '{$newStatus}'.");
     }

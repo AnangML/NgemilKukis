@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\CustomerLoginRequest;
 use App\Http\Requests\Auth\CustomerRegisterRequest;
 use App\Models\User;
+use App\Services\ActivityLogger;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -34,6 +35,12 @@ class CustomerEmailAuthController extends Controller
         Auth::login($user);
         $request->session()->regenerate();
 
+        ActivityLogger::auth(
+            'auth.customer_register',
+            'Member baru mendaftar via email: '.$user->name.' ('.$user->email.')',
+            $user
+        );
+
         if ($request->wantsJson()) {
             return response()->json([
                 'success' => true,
@@ -61,19 +68,34 @@ class CustomerEmailAuthController extends Controller
 
         if (Auth::attempt($credentials, $remember)) {
             $request->session()->regenerate();
+            $user = Auth::user();
+
+            ActivityLogger::auth(
+                'auth.customer_login',
+                'Member masuk via email: '.$user->name.' ('.$user->email.')',
+                $user
+            );
 
             if ($request->wantsJson()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Selamat datang kembali, '.Auth::user()->name.'! Diskon member aktif.',
-                    'user' => Auth::user(),
+                    'message' => 'Selamat datang kembali, '.$user->name.'! Diskon member aktif.',
+                    'user' => $user,
                     'redirect_url' => url()->previous(),
                 ]);
             }
 
             return redirect()->intended(url()->previous())
-                ->with('success', 'Selamat datang kembali, '.Auth::user()->name.'! Diskon member aktif.');
+                ->with('success', 'Selamat datang kembali, '.$user->name.'! Diskon member aktif.');
         }
+
+        ActivityLogger::log(
+            'auth.customer_login_failed',
+            'auth',
+            'Percobaan login member gagal untuk email: '.$request->input('email'),
+            null,
+            ['email' => $request->input('email')]
+        );
 
         if ($request->wantsJson()) {
             return response()->json([
@@ -93,6 +115,15 @@ class CustomerEmailAuthController extends Controller
      */
     public function logout(Request $request): RedirectResponse
     {
+        $user = Auth::user();
+        if ($user) {
+            ActivityLogger::auth(
+                'auth.customer_logout',
+                'Member keluar akun: '.$user->name.' ('.$user->email.')',
+                $user
+            );
+        }
+
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();

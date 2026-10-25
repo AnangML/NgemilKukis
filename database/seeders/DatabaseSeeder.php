@@ -33,6 +33,30 @@ class DatabaseSeeder extends Seeder
             ]
         );
 
+        // Seed default Penjual (Seller)
+        User::updateOrCreate(
+            ['email' => 'penjual@ngemilkukis.com'],
+            [
+                'name' => 'Siti Nurhaliza (Penjual)',
+                'password' => Hash::make('password123'),
+                'phone' => '081234567891',
+                'role' => 'seller',
+                'auth_provider' => 'email',
+            ]
+        );
+
+        // Seed default Customer Service (CS)
+        User::updateOrCreate(
+            ['email' => 'cs@ngemilkukis.com'],
+            [
+                'name' => 'Andi Customer Service',
+                'password' => Hash::make('password123'),
+                'phone' => '081234567892',
+                'role' => 'customer_service',
+                'auth_provider' => 'email',
+            ]
+        );
+
         // Seed default VIP Customer for demo & testing
         User::updateOrCreate(
             ['email' => 'customer@ngemilkukis.com'],

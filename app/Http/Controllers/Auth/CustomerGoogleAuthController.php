@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Services\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -83,6 +84,12 @@ class CustomerGoogleAuthController extends Controller
             Auth::login($user, true);
             $request->session()->regenerate();
 
+            ActivityLogger::auth(
+                'auth.customer_google_login',
+                'Member masuk via Google: '.$user->name.' ('.$user->email.')',
+                $user
+            );
+
             return redirect()->intended(route('home'))
                 ->with('success', 'Berhasil masuk dengan Google! Diskon member Rp 10.000 aktif.');
         } catch (\Throwable $e) {
@@ -107,6 +114,12 @@ class CustomerGoogleAuthController extends Controller
 
         Auth::login($user, true);
         request()->session()->regenerate();
+
+        ActivityLogger::auth(
+            'auth.customer_google_login',
+            'Member masuk via Google (Mode Demo): '.$user->name.' ('.$user->email.')',
+            $user
+        );
 
         return redirect()->intended(url()->previous())
             ->with('success', 'Berhasil masuk via Google (Mode Demo)! Diskon member Rp 10.000 telah aktif.');

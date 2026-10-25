@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreOrderRequest;
 use App\Models\Order;
+use App\Services\ActivityLogger;
 use App\Services\OrderService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
@@ -25,6 +26,18 @@ class OrderController extends Controller
             ?? null;
 
         $order = $this->orderService->createOrder($validated, $idempotencyKey);
+
+        ActivityLogger::order(
+            'order.created',
+            'Pesanan baru dibuat #'.$order->order_number.' senilai Rp '.number_format($order->grand_total, 0, ',', '.').' ('.$order->customer_name.')',
+            $order,
+            [
+                'order_number' => $order->order_number,
+                'grand_total' => $order->grand_total,
+                'payment_method' => $order->payment_method,
+                'status' => $order->status,
+            ]
+        );
 
         return response()->json([
             'success' => true,

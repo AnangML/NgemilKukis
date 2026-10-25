@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\Admin\ActivityLogController;
 use App\Http\Controllers\Admin\AuthController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\GreetingCardController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\SiteSettingController;
+use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\CustomerEmailAuthController;
 use App\Http\Controllers\Auth\CustomerGoogleAuthController;
 use App\Http\Controllers\Auth\CustomerPhoneAuthController;
@@ -55,32 +57,38 @@ Route::get('/order/{orderNumber}/status', [OrderController::class, 'status'])->n
 Route::post('/order/{orderNumber}/simulate-pay', SimulatePaymentController::class)->name('orders.simulate-pay');
 Route::post('/api/xendit/webhook', XenditWebhookController::class)->name('xendit.webhook');
 
-// Admin Domain Routes
+// Admin & Staff Internal Domain Routes
 Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->name('login.submit');
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-    // Protected Admin Panel Routes
-    Route::middleware('admin')->group(function () {
+    // Protected Staff Panel Routes (Admin, Seller, Customer Service)
+    Route::middleware('staff')->group(function () {
         Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
 
-        // Products Catalog Management
-        Route::patch('products/{product}/toggle', [ProductController::class, 'toggleStatus'])->name('products.toggle');
-        Route::patch('products/{product}/toggle-featured', [ProductController::class, 'toggleFeatured'])->name('products.toggle-featured');
-        Route::resource('products', ProductController::class)->except(['show']);
-
-        // Greeting Cards Management
-        Route::patch('greeting-cards/{greetingCard}/toggle', [GreetingCardController::class, 'toggleStatus'])->name('greeting-cards.toggle');
-        Route::resource('greeting-cards', GreetingCardController::class)->except(['show'])->parameters(['greeting-cards' => 'greetingCard']);
-
-        // Orders Management
+        // Orders Management (All Staff)
         Route::get('/orders', [App\Http\Controllers\Admin\OrderController::class, 'index'])->name('orders.index');
         Route::get('/orders/{order}', [App\Http\Controllers\Admin\OrderController::class, 'show'])->name('orders.show');
         Route::patch('/orders/{order}/status', [App\Http\Controllers\Admin\OrderController::class, 'updateStatus'])->name('orders.update-status');
 
-        // Site Settings Management (Dynamic Content)
-        Route::get('/settings', [SiteSettingController::class, 'index'])->name('settings.index');
-        Route::put('/settings', [SiteSettingController::class, 'update'])->name('settings.update');
+        // Products Catalog & Greeting Cards Management (Admin & Seller)
+        Route::middleware('role:admin,seller')->group(function () {
+            Route::patch('products/{product}/toggle', [ProductController::class, 'toggleStatus'])->name('products.toggle');
+            Route::patch('products/{product}/toggle-featured', [ProductController::class, 'toggleFeatured'])->name('products.toggle-featured');
+            Route::resource('products', ProductController::class)->except(['show']);
+
+            Route::patch('greeting-cards/{greetingCard}/toggle', [GreetingCardController::class, 'toggleStatus'])->name('greeting-cards.toggle');
+            Route::resource('greeting-cards', GreetingCardController::class)->except(['show'])->parameters(['greeting-cards' => 'greetingCard']);
+        });
+
+        // Super Admin Exclusive Management (Settings, Staff Users, Activity Logs)
+        Route::middleware('role:admin')->group(function () {
+            Route::get('/settings', [SiteSettingController::class, 'index'])->name('settings.index');
+            Route::put('/settings', [SiteSettingController::class, 'update'])->name('settings.update');
+
+            Route::resource('users', UserController::class)->only(['index', 'store', 'update', 'destroy']);
+            Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+        });
     });
 });

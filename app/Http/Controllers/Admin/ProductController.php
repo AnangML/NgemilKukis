@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreProductRequest;
 use App\Http\Requests\Admin\UpdateProductRequest;
 use App\Models\Product;
+use App\Services\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -72,6 +73,13 @@ class ProductController extends Controller
 
         $product = Product::create($data);
 
+        ActivityLogger::catalog(
+            'product.created',
+            (auth()->user()?->role_label ?? 'Staf').' '.(auth()->user()?->name ?? '')." menambahkan produk baru: {$product->name} (Rp ".number_format($product->price, 0, ',', '.').')',
+            $product,
+            ['name' => $product->name, 'price' => $product->price, 'stock' => $product->stock]
+        );
+
         return redirect()->route('admin.products.index')
             ->with('success', "Produk '{$product->name}' berhasil ditambahkan ke katalog!");
     }
@@ -113,6 +121,13 @@ class ProductController extends Controller
 
         $product->update($data);
 
+        ActivityLogger::catalog(
+            'product.updated',
+            (auth()->user()?->role_label ?? 'Staf').' '.(auth()->user()?->name ?? '')." memperbarui produk: {$product->name}",
+            $product,
+            ['name' => $product->name, 'price' => $product->price, 'stock' => $product->stock]
+        );
+
         return redirect()->route('admin.products.index')
             ->with('success', "Produk '{$product->name}' berhasil diperbarui!");
     }
@@ -124,6 +139,13 @@ class ProductController extends Controller
     {
         $name = $product->name;
         $product->delete();
+
+        ActivityLogger::catalog(
+            'product.deleted',
+            (auth()->user()?->role_label ?? 'Staf').' '.(auth()->user()?->name ?? '')." menghapus produk: {$name}",
+            null,
+            ['name' => $name]
+        );
 
         return redirect()->route('admin.products.index')
             ->with('success', "Produk '{$name}' telah dihapus dari katalog.");
@@ -138,6 +160,13 @@ class ProductController extends Controller
             'is_active' => ! $product->is_active,
         ]);
 
+        ActivityLogger::catalog(
+            'product.status_toggled',
+            (auth()->user()?->role_label ?? 'Staf').' '.(auth()->user()?->name ?? '')." mengubah status produk {$product->name} menjadi ".($product->is_active ? 'Aktif' : 'Nonaktif'),
+            $product,
+            ['is_active' => $product->is_active]
+        );
+
         $stateText = $product->is_active ? 'diaktifkan' : 'dinonaktifkan';
 
         return back()->with('success', "Status produk '{$product->name}' berhasil {$stateText}.");
@@ -151,6 +180,13 @@ class ProductController extends Controller
         $product->update([
             'is_featured' => ! $product->is_featured,
         ]);
+
+        ActivityLogger::catalog(
+            'product.featured_toggled',
+            (auth()->user()?->role_label ?? 'Staf').' '.(auth()->user()?->name ?? '')." mengubah status unggulan {$product->name} menjadi ".($product->is_featured ? 'Unggulan' : 'Standar'),
+            $product,
+            ['is_featured' => $product->is_featured]
+        );
 
         $stateText = $product->is_featured ? 'dijadikan produk unggulan' : 'dihapus dari produk unggulan';
 

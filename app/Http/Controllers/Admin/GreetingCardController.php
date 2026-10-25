@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Admin\StoreGreetingCardRequest;
 use App\Http\Requests\Admin\UpdateGreetingCardRequest;
 use App\Models\GreetingCardTemplate;
+use App\Services\ActivityLogger;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -59,7 +60,13 @@ class GreetingCardController extends Controller
         $data['slug'] = $slug;
         $data['is_active'] = $request->boolean('is_active');
 
-        GreetingCardTemplate::create($data);
+        $card = GreetingCardTemplate::create($data);
+
+        ActivityLogger::catalog(
+            'card.created',
+            (auth()->user()?->role_label ?? 'Staf').' '.(auth()->user()?->name ?? '')." menambahkan kartu ucapan baru: \"{$data['name']}\"",
+            $card
+        );
 
         return redirect()->route('admin.greeting-cards.index')
             ->with('success', "Template kartu ucapan \"{$data['name']}\" berhasil ditambahkan!");
@@ -95,6 +102,12 @@ class GreetingCardController extends Controller
 
         $greetingCard->update($data);
 
+        ActivityLogger::catalog(
+            'card.updated',
+            (auth()->user()?->role_label ?? 'Staf').' '.(auth()->user()?->name ?? '')." memperbarui kartu ucapan: \"{$greetingCard->name}\"",
+            $greetingCard
+        );
+
         return redirect()->route('admin.greeting-cards.index')
             ->with('success', "Template kartu ucapan \"{$greetingCard->name}\" berhasil diperbarui!");
     }
@@ -108,6 +121,12 @@ class GreetingCardController extends Controller
             'is_active' => ! $greetingCard->is_active,
         ]);
 
+        ActivityLogger::catalog(
+            'card.status_toggled',
+            (auth()->user()?->role_label ?? 'Staf').' '.(auth()->user()?->name ?? '')." mengubah status kartu ucapan \"{$greetingCard->name}\" menjadi ".($greetingCard->is_active ? 'Aktif' : 'Nonaktif'),
+            $greetingCard
+        );
+
         $statusLabel = $greetingCard->is_active ? 'diaktifkan' : 'dinonaktifkan';
 
         return back()->with('success', "Status kartu \"{$greetingCard->name}\" berhasil {$statusLabel}!");
@@ -120,6 +139,12 @@ class GreetingCardController extends Controller
     {
         $name = $greetingCard->name;
         $greetingCard->delete();
+
+        ActivityLogger::catalog(
+            'card.deleted',
+            (auth()->user()?->role_label ?? 'Staf').' '.(auth()->user()?->name ?? '')." menghapus kartu ucapan: \"{$name}\"",
+            null
+        );
 
         return redirect()->route('admin.greeting-cards.index')
             ->with('success', "Template kartu ucapan \"{$name}\" berhasil dihapus.");

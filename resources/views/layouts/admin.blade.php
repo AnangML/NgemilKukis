@@ -64,6 +64,7 @@
                     <span>Dashboard</span>
                 </a>
 
+                @if(auth()->user()->canManageProducts())
                 <a href="{{ route('admin.products.index') }}" 
                    class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition {{ request()->routeIs('admin.products.*') ? 'bg-[#b87d4b] text-white font-bold shadow-sm' : 'text-[#6d4630] hover:bg-[#f6efe8] hover:text-[#2d180c]' }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -79,7 +80,9 @@
                     </svg>
                     <span>Kartu Ucapan</span>
                 </a>
+                @endif
 
+                @if(auth()->user()->canManageOrders())
                 <a href="{{ route('admin.orders.index') }}" 
                    class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition {{ request()->routeIs('admin.orders.*') ? 'bg-[#b87d4b] text-white font-bold shadow-sm' : 'text-[#6d4630] hover:bg-[#f6efe8] hover:text-[#2d180c]' }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -87,7 +90,9 @@
                     </svg>
                     <span>Pesanan Masuk</span>
                 </a>
+                @endif
 
+                @if(auth()->user()->canManageSettings())
                 <a href="{{ route('admin.settings.index') }}" 
                    class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition {{ request()->routeIs('admin.settings.*') ? 'bg-[#b87d4b] text-white font-bold shadow-sm' : 'text-[#6d4630] hover:bg-[#f6efe8] hover:text-[#2d180c]' }}">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -96,6 +101,27 @@
                     </svg>
                     <span>Pengaturan Tampilan</span>
                 </a>
+                @endif
+
+                @if(auth()->user()->canManageStaff())
+                <a href="{{ route('admin.users.index') }}" 
+                   class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition {{ request()->routeIs('admin.users.*') ? 'bg-[#b87d4b] text-white font-bold shadow-sm' : 'text-[#6d4630] hover:bg-[#f6efe8] hover:text-[#2d180c]' }}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                    </svg>
+                    <span>Manajemen Staf</span>
+                </a>
+                @endif
+
+                @if(auth()->user()->canViewLogs())
+                <a href="{{ route('admin.activity-logs.index') }}" 
+                   class="flex items-center gap-3 px-3.5 py-3 rounded-xl transition {{ request()->routeIs('admin.activity-logs.*') ? 'bg-[#b87d4b] text-white font-bold shadow-sm' : 'text-[#6d4630] hover:bg-[#f6efe8] hover:text-[#2d180c]' }}">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                    </svg>
+                    <span>Log Aktivitas</span>
+                </a>
+                @endif
             </nav>
         </div>
 
@@ -113,13 +139,15 @@
             </a>
 
             <div class="pt-2 flex items-center justify-between">
-                <div class="flex items-center gap-2.5">
-                    <div class="w-8 h-8 rounded-full bg-[#2d180c] text-white flex items-center justify-center font-bold text-xs">
+                <div class="flex items-center gap-2.5 min-w-0">
+                    <div class="w-8 h-8 rounded-full bg-[#2d180c] text-white flex items-center justify-center font-bold text-xs shrink-0">
                         {{ strtoupper(substr(auth()->user()->name ?? 'A', 0, 1)) }}
                     </div>
                     <div class="truncate">
                         <p class="text-xs font-bold text-[#2d180c] truncate">{{ auth()->user()->name ?? 'Admin' }}</p>
-                        <p class="text-[10px] text-[#6d4630] truncate">{{ auth()->user()->email ?? '' }}</p>
+                        <span class="inline-block text-[9px] font-extrabold uppercase px-1.5 py-0.2 rounded border {{ auth()->user()->role_badge_classes }}">
+                            {{ auth()->user()->role_label }}
+                        </span>
                     </div>
                 </div>
 
@@ -127,7 +155,7 @@
                     @csrf
                     <button type="submit" 
                             title="Logout" 
-                            class="p-2 text-[#6d4630] hover:text-rose-600 hover:bg-rose-50 rounded-lg transition cursor-pointer">
+                            class="p-2 text-[#6d4630] hover:text-rose-600 hover:bg-rose-50 rounded-lg transition cursor-pointer shrink-0">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
                         </svg>

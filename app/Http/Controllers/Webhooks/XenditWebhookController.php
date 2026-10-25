@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Webhooks;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Services\ActivityLogger;
 use App\Services\XenditPaymentService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -44,6 +45,13 @@ class XenditWebhookController extends Controller
                     'status' => 'paid',
                 ]);
 
+                ActivityLogger::order(
+                    'order.paid_webhook',
+                    "Pembayaran pesanan #{$order->order_number} lunas diverifikasi via Webhook Resmi Xendit.",
+                    $order,
+                    ['external_id' => $externalId, 'status' => $status]
+                );
+
                 Log::info("Xendit payment confirmed automatically for order {$order->order_number}");
             }
         } elseif ($externalId && $status === 'EXPIRED') {
@@ -52,6 +60,13 @@ class XenditWebhookController extends Controller
                 $order->update([
                     'status' => 'cancelled',
                 ]);
+
+                ActivityLogger::order(
+                    'order.expired_webhook',
+                    "Pesanan #{$order->order_number} dibatalkan otomatis (Invoice Xendit kedaluwarsa).",
+                    $order,
+                    ['external_id' => $externalId, 'status' => $status]
+                );
             }
         }
 

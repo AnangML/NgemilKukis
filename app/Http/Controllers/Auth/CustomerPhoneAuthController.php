@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\SendPhoneOtpRequest;
 use App\Http\Requests\Auth\VerifyPhoneOtpRequest;
 use App\Models\User;
+use App\Services\ActivityLogger;
 use App\Services\PhoneOtpService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -65,6 +66,12 @@ class CustomerPhoneAuthController extends Controller
 
         Auth::login($user, true);
         $request->session()->regenerate();
+
+        ActivityLogger::auth(
+            'auth.customer_phone_login',
+            'Member masuk via Nomor HP OTP: '.$user->name.' ('.$user->phone.')',
+            $user
+        );
 
         return response()->json([
             'success' => true,
